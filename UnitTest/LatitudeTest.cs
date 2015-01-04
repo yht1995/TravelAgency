@@ -7,11 +7,11 @@ namespace UnitTest
     
     
     /// <summary>
-    ///这是 CityTest 的测试类，旨在
-    ///包含所有 CityTest 单元测试
+    ///这是 LatitudeTest 的测试类，旨在
+    ///包含所有 LatitudeTest 单元测试
     ///</summary>
     [TestClass()]
-    public class CityTest
+    public class LatitudeTest
     {
 
 
@@ -65,17 +65,29 @@ namespace UnitTest
 
 
         /// <summary>
-        ///City 构造函数 的测试
+        ///ToString 的测试
         ///</summary>
         [TestMethod()]
-        public void CityConstructorTest()
+        public void ToStringTest()
         {
-            string name = "北京"; // TODO: 初始化为适当的值
-            string longitude = " "; // TODO: 初始化为适当的值
-            string latitude = "南纬 23.23"; // TODO: 初始化为适当的值
-            string transitFees = string.Empty; // TODO: 初始化为适当的值
-            City target = new City(name, longitude, latitude, transitFees);
-            Assert.AreEqual(target.Latitude,-23.23);
+            Latitude target = new Latitude(); // TODO: 初始化为适当的值
+            target.FromString("北纬 12.1");
+            string expected = "北纬 12.10"; // TODO: 初始化为适当的值
+            string actual = target.ToString();
+            Assert.AreEqual(target.Value, 12.1);
+            Assert.AreEqual(expected, actual);
+
+            target.FromString("南纬 12.1");
+            expected = "南纬 12.10"; // TODO: 初始化为适当的值
+            actual = target.ToString();
+            Assert.AreEqual(target.Value, -12.1);
+            Assert.AreEqual(expected, actual);
+
+            target.FromString("南纬25.1");
+            expected = "南纬 25.10"; // TODO: 初始化为适当的值
+            actual = target.ToString();
+            Assert.AreEqual(target.Value, -25.1);
+            Assert.AreEqual(expected, actual);
         }
     }
 }

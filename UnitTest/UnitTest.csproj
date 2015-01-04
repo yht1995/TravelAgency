@@ -72,8 +72,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="CityTest.cs" />
-    <Compile Include="GraphTest.cs" />
+    <Compile Include="LatitudeTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
