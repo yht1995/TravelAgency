@@ -25,12 +25,82 @@ namespace TravelAgency
         double GetXmax();
         double GetYmin();
         double GetYmax();
-        Ellipse Ellipse
+    }
+
+    public class Edge<TVertex, TEdge>
+    where TVertex : IVertexVisualization
+    {
+        private TEdge value;
+        private TVertex start;
+
+        public TVertex Start
         {
-            get;
-            set;
+            get { return start; }
+            set { start = value; }
+        }
+        private TVertex end;
+
+        public TVertex End
+        {
+            get { return end; }
+            set { end = value; }
+        }
+
+        public TEdge Value
+        {
+            get { return this.value; }
+            set { this.value = value; }
+        }
+
+        public Edge(TVertex start, TVertex end, TEdge edge)
+        {
+            this.start = start;
+            this.end = end;
+            this.value = edge;
+        }
+
+        public double GetStartX()
+        {
+            return start.GetCenterX();
+        }
+
+        public double GetStartY()
+        {
+            return start.GetCenterY();
+        }
+
+        public double GetEndX()
+        {
+            return end.GetCenterX();
+        }
+
+        public double GetEndY()
+        {
+            return end.GetCenterY();
+        }
+
+        private System.Windows.Shapes.Line line;
+
+        public System.Windows.Shapes.Line Line
+        {
+            get { return line; }
+            set { line = value; }
         }
     }
+
+    public class Vertex<TVertex>
+    {
+        public TVertex vertex;
+        public Ellipse ellipse;
+
+        public Vertex (TVertex vertex,Ellipse ellipse)
+        {
+            this.vertex = vertex;
+            this.ellipse = ellipse;
+        }
+    }
+
+    public delegate void OnVertexClickedEventHandler<TVertex> (TVertex e);
 
     public class Visualization<TVertex,TEdge>
         where TVertex:IVertexVisualization
@@ -40,6 +110,10 @@ namespace TravelAgency
         private double Xoffset;
         private double Yoffset;
         private double scale;
+        private List<Vertex<TVertex>> vertexList = new List<Vertex<TVertex>>();
+        private List<Edge<TVertex, TEdge>> edgeList = new List<Edge<TVertex, TEdge>>();
+
+        public event OnVertexClickedEventHandler<TVertex> OnVertexClickedEvent;
 
         public Canvas Canva
         {
@@ -62,16 +136,18 @@ namespace TravelAgency
             {
                 foreach (Edge<TVertex, TEdge> edge in graph.GetEdgesofVertex(vertex))
                 {
-                    DrawEdge(edge);
+                    edge.Line = DrawEdge(edge);
+                    edgeList.Add(edge);
                 }
             }
             foreach (TVertex vertex in graph.VertexList)
             {
-                DrawVertex(vertex);
+                Ellipse e = DrawVertex(vertex);
+                vertexList.Add(new Vertex<TVertex>(vertex,e));
             }
         }
 
-        public void DrawVertex(TVertex vertex)
+        public Ellipse DrawVertex(TVertex vertex)
         {
             SolidColorBrush mySolidColorBrush = new SolidColorBrush();
             mySolidColorBrush.Color = Color.FromArgb(255, 255, 255, 0);
@@ -79,15 +155,47 @@ namespace TravelAgency
             ellipse.Fill = mySolidColorBrush;
             ellipse.StrokeThickness = 2;
             ellipse.Stroke = Brushes.Black;
-            ellipse.Height = 20;
-            ellipse.Width = 20;
+            ellipse.Height = 40;
+            ellipse.Width = 40;
             Canvas.SetLeft(ellipse, (vertex.GetCenterX() - Xoffset) * scale - ellipse.Width / 2);
             Canvas.SetBottom(ellipse, (vertex.GetCenterY() - Yoffset) * scale - ellipse.Height / 2);
-            vertex.Ellipse = ellipse;
             canva.Children.Add(ellipse);
+            ellipse.MouseDown += ellipse_MouseDown;
+            ellipse.IsMouseDirectlyOverChanged += ellipse_IsMouseDirectlyOverChanged;
+            return ellipse;
         }
 
-        public void DrawEdge(Edge<TVertex, TEdge> edge)
+        void ellipse_IsMouseDirectlyOverChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            Ellipse ellipse = sender as Ellipse;
+            if (ellipse.IsMouseDirectlyOver)
+            {
+                SolidColorBrush mySolidColorBrush = new SolidColorBrush();
+                mySolidColorBrush.Color = Color.FromArgb(255, 255, 0, 0);
+                ellipse.Fill = mySolidColorBrush;
+            }
+            else
+            {
+                SolidColorBrush mySolidColorBrush = new SolidColorBrush();
+                mySolidColorBrush.Color = Color.FromArgb(255, 255, 255, 0);
+                ellipse.Fill = mySolidColorBrush;
+            }
+        }
+
+        void ellipse_MouseDown(object sender, MouseEventArgs e)
+        {
+            foreach (Vertex<TVertex> vertex in vertexList)
+            {
+                if (vertex.ellipse == (Ellipse)sender)
+                {
+                    OnVertexClickedEvent(vertex.vertex);
+                }
+            }
+        }
+
+
+
+        public Line DrawEdge(Edge<TVertex, TEdge> edge)
         {
             Line line = new Line();
             line.Stroke = System.Windows.Media.Brushes.LightSteelBlue;
@@ -97,8 +205,8 @@ namespace TravelAgency
             line.Y2 = canva.Height - ((edge.GetEndY() - Yoffset) * scale);
             line.VerticalAlignment = VerticalAlignment.Bottom;
             line.HorizontalAlignment = HorizontalAlignment.Left;
-            edge.Line = line;
-            this.canva.Children.Add(line); 
+            this.canva.Children.Add(line);
+            return line;
         }
     }
 }

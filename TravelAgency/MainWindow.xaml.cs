@@ -17,9 +17,6 @@ using System.Windows.Shapes;
 
 namespace TravelAgency
 {
-    /// <summary>
-    /// This is a Window that uses NetworkView to display a flow-chart.
-    /// </summary>
     public partial class MainWindow : Window
     {
         AdjacencyGraph<City, int> map = new AdjacencyGraph<City, int>();
@@ -28,6 +25,7 @@ namespace TravelAgency
         {
             InitializeComponent();
             visual = new Visualization<City, int>(this.canva);
+            visual.OnVertexClickedEvent += visual_OnVertexClickedEvent;
         }
 
         private void Import_Click(object sender, RoutedEventArgs e)
@@ -41,6 +39,19 @@ namespace TravelAgency
         private void Export_Click(object sender, RoutedEventArgs e)
         {
             FileIO.ExportMap(map);
+        }
+
+        private void visual_OnVertexClickedEvent(City city)
+        {
+            this.cityName.Text = city.Name.ToString();
+            this.latitude.Text = LatitudeClass.ToString(city.Latitude);
+            this.longitude.Text = LongitudeClass.ToString(city.Longitude);
+            this.transitFee.Text = city.TransitFees.ToString();
+            this.neighborList.Items.Clear();
+            foreach(Edge<City,int> e in map.GetEdgesofVertex(city))
+            {
+                this.neighborList.Items.Add(e.End.Name == city.Name?e.Start.Name:e.End.Name);
+            }
         }
     }
 }

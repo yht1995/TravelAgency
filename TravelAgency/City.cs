@@ -171,14 +171,14 @@ namespace TravelAgency
             return latitude;
         }
         
-        [NonSerialized]
-        private System.Windows.Shapes.Ellipse ellipse;
+        //[NonSerialized]
+        //private System.Windows.Shapes.Ellipse ellipse;
 
-        public System.Windows.Shapes.Ellipse Ellipse
-        {
-            get { return ellipse; }
-            set { ellipse = value; }
-        }
+        //public System.Windows.Shapes.Ellipse Ellipse
+        //{
+        //    get { return ellipse; }
+        //    set { ellipse = value; }
+        //}
 
         double IVertexVisualization.GetXmin()
         {

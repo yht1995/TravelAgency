@@ -8,67 +8,18 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace TravelAgency
 {
-    public class Edge<TVertex, TEdge>
-        where TVertex:IVertexVisualization
-    {
-        private TEdge value;
-        private TVertex start;
-        private TVertex end;
-
-        public TEdge Value
-        {
-            get { return this.value; }
-            set { this.value = value; }
-        }
-
-        public Edge(TVertex start,TVertex end,TEdge edge)
-        {
-            this.start = start;
-            this.end = end;
-            this.value = edge;
-        }
-
-        public double GetStartX()
-        {
-            return start.GetCenterX();
-        }
-
-        public double GetStartY()
-        {
-            return start.GetCenterY();
-        }
-
-        public double GetEndX()
-        {
-            return end.GetCenterX();
-        }
-
-        public double GetEndY()
-        {
-            return end.GetCenterY();
-        }
-
-        private System.Windows.Shapes.Line line;
-
-        public System.Windows.Shapes.Line Line
-        {
-            get { return line; }
-            set { line = value; }
-        }
-    }
-
     [Serializable]
     public class AdjacencyGraph<TVertex, TEdge>
         where  TVertex : IVertexVisualization
         where  TEdge : IEquatable<TEdge>, new()
     {
-        public List<TVertex> vertexList;
+        private List<TVertex> vertexList;
         public List<TVertex> VertexList
         {
             get { return vertexList; }
             set { vertexList = value; }
         }
-        public List<List<TEdge>> adjacencyMartix;
+        private List<List<TEdge>> adjacencyMartix;
         public List<List<TEdge>> AdjacencyMartix
         {
             get { return adjacencyMartix; }

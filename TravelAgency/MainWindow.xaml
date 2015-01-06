@@ -7,16 +7,37 @@
         Title="MainWindow" Height="700" Width="1000" WindowStyle="ThreeDBorderWindow">
 
     <Grid>
-        <zoom:ZoomControl Margin="0,0,0,180">
+        <zoom:ZoomControl Margin="0,0,0,180" >
             <Canvas HorizontalAlignment="Center" Height="1800" VerticalAlignment="Center" Width="3600" Name="canva"/>
         </zoom:ZoomControl>
-        <TabControl Height="190" VerticalAlignment="Bottom">
+        <TabControl Height="200" VerticalAlignment="Bottom">
             <TabItem Header="城市和路径">
                 <Grid Background="#FFE5E5E5">
-                    <GroupBox Header="文件操作" HorizontalAlignment="Left" Margin="10,10,0,10" Width="122">
+                    <GroupBox Header="地图数据" HorizontalAlignment="Left" Margin="10,10,0,10" Width="120">
                         <Grid>
-                            <Button x:Name="Import" Content="导入数据" HorizontalAlignment="Center" Height="25" VerticalAlignment="Bottom" Width="80" Margin="15,0,15,85" Click="Import_Click"/>
-                            <Button x:Name="Export" Content="导出数据" HorizontalAlignment="Center" Height="25" VerticalAlignment="Bottom" Width="80" Margin="15,0,15,55" Click="Export_Click"/>
+                            <Button x:Name="Import" Content="导入数据" HorizontalAlignment="Center" Height="25" VerticalAlignment="Bottom" Width="70" Margin="15,0,15,85" Click="Import_Click"/>
+                            <Button x:Name="Export" Content="导出数据" HorizontalAlignment="Center" Height="25" VerticalAlignment="Bottom" Width="70" Margin="15,0,15,55" Click="Export_Click"/>
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Header="城市" HorizontalAlignment="Left" Margin="150,10,0,10" Width="400">
+                        <Grid>
+                            <Label Content="城市名" HorizontalAlignment="Left" Margin="9,8,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.565,1.64"/>
+                            <TextBox x:Name="cityName" HorizontalAlignment="Left" Height="23" Margin="60,10,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="90"/>
+                            <Label Content="经度" HorizontalAlignment="Left" Margin="10,38,0,0" VerticalAlignment="Top"/>
+                            <TextBox x:Name="longitude" HorizontalAlignment="Left" Height="23" Margin="60,40,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="90"/>
+                            <Label Content="纬度" HorizontalAlignment="Left" Margin="10,68,0,0" VerticalAlignment="Top"/>
+                            <TextBox x:Name="latitude" HorizontalAlignment="Left" Height="23" Margin="60,70,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="90"/>
+                            <Label Content="中转费" HorizontalAlignment="Left" Margin="10,98,0,0" VerticalAlignment="Top"/>
+                            <TextBox x:Name="transitFee" HorizontalAlignment="Left" Height="23" Margin="60,100,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="90"/>
+                            <ListBox x:Name="neighborList" Margin="230,30,10,10"/>
+                            <Label Content="相邻城市" HorizontalAlignment="Left" Margin="230,5,0,0" VerticalAlignment="Top"/>
+                            <Button Content="添加" HorizontalAlignment="Left" Margin="166,70,0,0" VerticalAlignment="Top" Width="50" Height="23"/>
+                            <Button Content="删除" HorizontalAlignment="Left" Margin="166,100,0,0" VerticalAlignment="Top" Width="50" Height="23"/>
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Header="路径" HorizontalAlignment="Left" Margin="580,10,0,10" Width="300">
+                        <Grid>
+
                         </Grid>
                     </GroupBox>
                 </Grid>
