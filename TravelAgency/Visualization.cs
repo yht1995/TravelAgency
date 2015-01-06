@@ -27,67 +27,6 @@ namespace TravelAgency
         double GetYmax();
     }
 
-    public class Edge<TVertex, TEdge>
-    where TVertex : IVertexVisualization
-    {
-        private TEdge value;
-        private TVertex start;
-
-        public TVertex Start
-        {
-            get { return start; }
-            set { start = value; }
-        }
-        private TVertex end;
-
-        public TVertex End
-        {
-            get { return end; }
-            set { end = value; }
-        }
-
-        public TEdge Value
-        {
-            get { return this.value; }
-            set { this.value = value; }
-        }
-
-        public Edge(TVertex start, TVertex end, TEdge edge)
-        {
-            this.start = start;
-            this.end = end;
-            this.value = edge;
-        }
-
-        public double GetStartX()
-        {
-            return start.GetCenterX();
-        }
-
-        public double GetStartY()
-        {
-            return start.GetCenterY();
-        }
-
-        public double GetEndX()
-        {
-            return end.GetCenterX();
-        }
-
-        public double GetEndY()
-        {
-            return end.GetCenterY();
-        }
-
-        private System.Windows.Shapes.Line line;
-
-        public System.Windows.Shapes.Line Line
-        {
-            get { return line; }
-            set { line = value; }
-        }
-    }
-
     public class Vertex<TVertex>
     {
         public TVertex vertex;
