@@ -17,7 +17,7 @@ namespace TravelAgency
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Title = "选择文件";
-            openFileDialog.Filter = "Excel文件|*.xlsx|地图数据文件|*.map";
+            openFileDialog.Filter = "地图数据文件|*.map|Excel文件|*.xlsx";
             openFileDialog.FileName = string.Empty;
             openFileDialog.FilterIndex = 1;
             openFileDialog.RestoreDirectory = true;
@@ -67,7 +67,7 @@ namespace TravelAgency
             map.VertexList = (List<City>)binFormat.Deserialize(fStream);
             map.AdjacencyMartix = (List<List<int>>)binFormat.Deserialize(fStream);
             fStream.Close();
-            foreach (City c in map.vertexList)
+            foreach (City c in map.VertexList)
             {
                 if (c.Latitude > City.latitudeMax)
                 {
