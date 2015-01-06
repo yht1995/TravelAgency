@@ -8,23 +8,9 @@ using Microsoft.Office.Core;
 
 namespace TravelAgency
 {
-    public class Latitude
+    public static class LatitudeClass
     {
-        private double longitude;
-        public double Value
-        {
-            get { return longitude; }
-            set
-            {
-                if (value > 90 || value < -90)
-                {
-                    throw (new Exception("纬度非法"));
-                }
-                longitude = value;
-            }
-        }
-
-        public void FromString(string s)
+        public static double FromString(string s)
         {
             if (!Regex.IsMatch(s, @"^[南北]纬(\s)*\d"))
             {
@@ -37,41 +23,31 @@ namespace TravelAgency
             {
                 throw (new Exception("纬度输入错误"));
             }
-            Value = result;
+            if (result > 90 || result < -90)
+            {
+                throw (new Exception("纬度非法"));
+            }
+            return result;
         }
 
-        override public string ToString()
+        public static string ToString(double value)
         {
             string result = "";
-            if (Value > 0)
+            if (value > 0)
             {
                 result = "北纬 ";
             }
-            else if (Value < 0)
+            else if (value < 0)
             {
                 result = "南纬 ";
             }
-            return result + Math.Abs(Value).ToString("F");
+            return result + Math.Abs(value).ToString("F");
         }
     }
-
-    public class Longitude
+    
+    public class LongitudeClass
     {
-        private double longitude;
-        public double Value
-        {
-            get { return longitude; }
-            set
-            {
-                if (value > 180 || value < -180)
-                {
-                    throw (new Exception("经度非法"));
-                }
-                longitude = value;
-            }
-        }
-
-        public void FromString(string s)
+        public static double FromString(string s)
         {
             if (!Regex.IsMatch(s, @"^[东西]经(\s)*\d"))
             {
@@ -84,41 +60,50 @@ namespace TravelAgency
             {
                 throw (new Exception("经度输入错误"));
             }
-            Value = result;
+            if (result > 180 || result < -180)
+            {
+                throw (new Exception("经度非法"));
+            }
+            return result;
         }
 
-        override public string ToString()
+        public static string ToString(double value)
         {
             string result = "";
-            if (Value > 0)
+            if (value > 0)
             {
                 result = "东经 ";
             }
-            else if (Value < 0)
+            else if (value < 0)
             {
                 result = "西经 ";
             }
-            return result + Math.Abs(Value).ToString("F");
+            return result + Math.Abs(value).ToString("F");
         }
     }
 
+    [Serializable]
     public class City
-        : IEquatable<City>, IVertexVisualization
+        : IEquatable<City>,IVertexVisualization
     {
-        private string name;
-        private Longitude longitude;   //经度
+        public static double longitudeMin = Double.PositiveInfinity;
+        public static double longitudeMax;
+        public static double latitudeMin = Double.PositiveInfinity;
+        public static double latitudeMax;
 
-        public Longitude Longitude
+        private string name;
+        private double longitude;   //经度
+        public double Longitude
         {
             get { return longitude; }
             private set { longitude = value; }
         }
-        private Latitude latitude;  //纬度
+        private double latitude;  //纬度
 
-        public Latitude Latitude
+        public double Latitude
         {
             get { return latitude; }
-            private set { latitude = value; }
+            set { latitude = value; }
         }
         private int transitFees;
 
@@ -141,41 +126,78 @@ namespace TravelAgency
 
         public City(string name, string longitude, string latitude, string transitFees)
         {
-            this.latitude = new Latitude();
-            this.longitude = new Longitude();
             this.name = name;
-            this.longitude.FromString(longitude);
-            this.latitude.FromString(latitude);
+            this.latitude = LatitudeClass.FromString(latitude);
+            this.longitude = LongitudeClass.FromString(longitude);
             int result = new int();
             if (!int.TryParse(transitFees,out result))
             {
                 throw (new Exception("中转费非法"));
             }
             this.transitFees = result;
+
+            if (this.latitude > City.latitudeMax)
+            {
+                City.latitudeMax = this.latitude;
+            }
+            if (this.latitude < City.latitudeMin)
+            {
+                City.latitudeMin = this.latitude;
+            }
+            if (this.longitude > City.longitudeMax)
+            {
+                City.longitudeMax = this.longitude;
+            }
+            if (this.longitude < City.longitudeMin)
+            {
+                City.longitudeMin = this.longitude;
+            }
         }
 
-        bool IEquatable<City>.Equals(City other)
+        public bool Equals(City other)
         {
-            return (this.name == other.name &&
-                this.latitude.Value == other.latitude.Value &&
-                this.longitude.Value == other.longitude.Value);
+            return (this.Name == other.Name &&
+                this.Latitude == other.Latitude &&
+                this.Longitude == other.Longitude);
         }
 
         double IVertexVisualization.GetCenterX()
         {
-            return Longitude.Value;
+            return longitude;
         }
 
         double IVertexVisualization.GetCenterY()
         {
-            return Latitude.Value;
+            return latitude;
+        }
+        
+        [NonSerialized]
+        private System.Windows.Shapes.Ellipse ellipse;
+
+        public System.Windows.Shapes.Ellipse Ellipse
+        {
+            get { return ellipse; }
+            set { ellipse = value; }
         }
 
-        System.Windows.Shapes.Ellipse ellipse;
-        System.Windows.Shapes.Ellipse IVertexVisualization.ellipse
+        double IVertexVisualization.GetXmin()
         {
-            get{return ellipse;}
-            set{ellipse = value;}
+            return longitudeMin;
+        }
+
+        double IVertexVisualization.GetXmax()
+        {
+            return longitudeMax;
+        }
+
+        double IVertexVisualization.GetYmin()
+        {
+            return latitudeMin;
+        }
+
+        double IVertexVisualization.GetYmax()
+        {
+            return latitudeMax;
         }
     }
 }
