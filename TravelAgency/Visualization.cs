@@ -1,6 +1,4 @@
-﻿using QuickGraph;
-using QuickGraph.Algorithms;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -19,35 +17,29 @@ using System.Windows.Shapes;
 
 namespace TravelAgency
 {
-    using Graph = UndirectedGraph<City, TaggedUndirectedEdge<City, int>>;
     public interface IVertexVisualization
     {
         double GetCenterX();
         double GetCenterY();
-
-        Ellipse ellipse
+        double GetXmin();
+        double GetXmax();
+        double GetYmin();
+        double GetYmax();
+        Ellipse Ellipse
         {
             get;
             set;
         }
     }
 
-    public interface IEdgeVisualization
-    {
-        double GetStartX();
-        double GetStartY();
-        double GetEndX();
-        double GetEndY();
-        Line line
-        {
-            get;
-            set;
-        }
-    }
-
-    public class Visualization
+    public class Visualization<TVertex,TEdge>
+        where TVertex:IVertexVisualization
+        where TEdge : IEquatable<TEdge>, new()
     {
         private Canvas canva;
+        private double Xoffset;
+        private double Yoffset;
+        private double scale;
 
         public Canvas Canva
         {
@@ -59,15 +51,27 @@ namespace TravelAgency
             this.canva = canva;
         }
 
-        public void DrawMap(Graph map)
+        public void DrawGraph(AdjacencyGraph<TVertex,TEdge> graph)
         {
-            foreach (City city in map.Vertices)
+            double Width = canva.Width/(graph.VertexList[0].GetXmax() - graph.VertexList[0].GetXmin());
+            double Height = canva.Height / (graph.VertexList[0].GetYmax() - graph.VertexList[0].GetYmin());
+            scale = Math.Min(Width,Height);
+            Xoffset = graph.VertexList[0].GetXmin();
+            Yoffset = graph.VertexList[0].GetYmin();
+            foreach (TVertex vertex in graph.VertexList)
             {
-                DrawVertex(city);
+                foreach (Edge<TVertex, TEdge> edge in graph.GetEdgesofVertex(vertex))
+                {
+                    DrawEdge(edge);
+                }
+            }
+            foreach (TVertex vertex in graph.VertexList)
+            {
+                DrawVertex(vertex);
             }
         }
 
-        private void DrawVertex(City city)
+        public void DrawVertex(TVertex vertex)
         {
             SolidColorBrush mySolidColorBrush = new SolidColorBrush();
             mySolidColorBrush.Color = Color.FromArgb(255, 255, 255, 0);
@@ -75,11 +79,26 @@ namespace TravelAgency
             ellipse.Fill = mySolidColorBrush;
             ellipse.StrokeThickness = 2;
             ellipse.Stroke = Brushes.Black;
-            ellipse.Height = 10;
-            ellipse.Width = 10;
-            Canvas.SetBottom(ellipse, city.Latitude.Value*10 + 900);
-            Canvas.SetLeft(ellipse, city.Longitude.Value*10 + 1800);
+            ellipse.Height = 20;
+            ellipse.Width = 20;
+            Canvas.SetLeft(ellipse, (vertex.GetCenterX() - Xoffset) * scale - ellipse.Width / 2);
+            Canvas.SetBottom(ellipse, (vertex.GetCenterY() - Yoffset) * scale - ellipse.Height / 2);
+            vertex.Ellipse = ellipse;
             canva.Children.Add(ellipse);
+        }
+
+        public void DrawEdge(Edge<TVertex, TEdge> edge)
+        {
+            Line line = new Line();
+            line.Stroke = System.Windows.Media.Brushes.LightSteelBlue;
+            line.X1 = (edge.GetStartX() - Xoffset) * scale;
+            line.X2 = (edge.GetEndX() - Xoffset) * scale;
+            line.Y1 = canva.Height - ((edge.GetStartY() - Yoffset) * scale);
+            line.Y2 = canva.Height - ((edge.GetEndY() - Yoffset) * scale);
+            line.VerticalAlignment = VerticalAlignment.Bottom;
+            line.HorizontalAlignment = HorizontalAlignment.Left;
+            edge.Line = line;
+            this.canva.Children.Add(line); 
         }
     }
 }

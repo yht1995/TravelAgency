@@ -1,6 +1,4 @@
-﻿using QuickGraph;
-using QuickGraph.Algorithms;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -22,23 +20,27 @@ namespace TravelAgency
     /// <summary>
     /// This is a Window that uses NetworkView to display a flow-chart.
     /// </summary>
-
-    using Graph = UndirectedGraph<City, TaggedUndirectedEdge<City, int>>;
     public partial class MainWindow : Window
     {
-        Graph map = new Graph();
-        List<City> cityList = new List<City>();
+        AdjacencyGraph<City, int> map = new AdjacencyGraph<City, int>();
+        Visualization<City, int> visual;
         public MainWindow()
         {
             InitializeComponent();
+            visual = new Visualization<City, int>(this.canva);
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Import_Click(object sender, RoutedEventArgs e)
         {
-            FileIO file = new FileIO();
-            file.ImportFormExcel(map,cityList);
-            Visualization visualization = new Visualization(canva);
-            visualization.DrawMap(map);
+            if (FileIO.ImportMap(map))
+            {
+                visual.DrawGraph(map);
+            }
+        }
+
+        private void Export_Click(object sender, RoutedEventArgs e)
+        {
+            FileIO.ExportMap(map);
         }
     }
 }
