@@ -69,39 +69,31 @@ namespace TravelAgency
     {
         private List<City> vertexList;
         private Dictionary<string, City> dictionary;
+        private int[,] adjacencyMartix;
+        private int[,] pathMartix;
+
+        public int[,] AdjacencyMartix
+        {
+            get { return adjacencyMartix; }
+            set { adjacencyMartix = value; }
+        }
+
         public List<City> VertexList
         {
             get { return vertexList; }
             set { vertexList = value; }
         }
-        //private List<List<int>> adjacencyMartix;
-        //public List<List<int>> AdjacencyMartix
-        //{
-        //    get { return adjacencyMartix; }
-        //    set { adjacencyMartix = value; }
-        //}
 
         public AdjacencyGraph()
         {
             this.vertexList = new List<City>();
             this.dictionary = new Dictionary<string, City>();
-            //this.adjacencyMartix = new List<List<int>>();
         }
 
         public void AddVertex(City vertex)
         {
             this.vertexList.Add(vertex);
             dictionary.Add(vertex.Name, vertex);
-            //foreach (List<int> line in this.adjacencyMartix)
-            //{
-            //    line.Add(new int());
-            //}
-            //List<int> newline = new List<int>();
-            //for (int i = 0; i < this.vertexList.Count;i++ )
-            //{
-            //    newline.Add(new int());
-            //}
-            //this.adjacencyMartix.Add(newline);
         }
 
         public void RemoveVertex(City vertex)
@@ -118,10 +110,6 @@ namespace TravelAgency
         {
             start.AddEdge(end, edge);
             end.AddEdge(start, edge);
-            //int indexStart = this.vertexList.IndexOf(start);
-            //int indexEnd = this.vertexList.IndexOf(end);
-            //this.adjacencyMartix[indexStart][indexEnd] = edge;
-            //this.adjacencyMartix[indexEnd][indexStart] = edge;
         }
 
         public void AddEdge(int start, int end, int edge)
@@ -130,10 +118,6 @@ namespace TravelAgency
             cstart = vertexList[start];
             cend = vertexList[end];
             AddEdge(cstart, cend, edge);
-            //int indexStart = this.vertexList.IndexOf(start);
-            //int indexEnd = this.vertexList.IndexOf(end);
-            //this.adjacencyMartix[indexStart][indexEnd] = edge;
-            //this.adjacencyMartix[indexEnd][indexStart] = edge;
         }
 
         public void AddEdge(string start, string end, int edge)
@@ -142,26 +126,12 @@ namespace TravelAgency
             dictionary.TryGetValue(start,out cstart);
             dictionary.TryGetValue(end, out cend);
             AddEdge(cstart, cend, edge);
-            //int indexStart = this.vertexList.IndexOf(start);
-            //int indexEnd = this.vertexList.IndexOf(end);
-            //this.adjacencyMartix[indexStart][indexEnd] = edge;
-            //this.adjacencyMartix[indexEnd][indexStart] = edge;
         }
-
-        //public void AddEdge(int indexStart, int indexEnd, int edge)
-        //{
-        //    this.adjacencyMartix[indexStart][indexEnd] = edge;
-        //    this.adjacencyMartix[indexEnd][indexStart] = edge;
-        //}
 
         public void RemoveEdge(City start, City end)
         {
             start.RemoveEdge(end);
             end.RemoveEdge(start);
-            //int indexStart = this.vertexList.IndexOf(start);
-            //int indexEnd = this.vertexList.IndexOf(end);
-            //this.adjacencyMartix[indexStart][indexEnd] = default(int);
-            //this.adjacencyMartix[indexEnd][indexStart] = default(int);
         }
 
         public int GetEdge(City start,City end)
@@ -185,6 +155,55 @@ namespace TravelAgency
         public void Clear()
         {
             this.VertexList.Clear();
+        }
+
+        private void UpdataAdjacencyMartix()
+        {
+            adjacencyMartix = new int[vertexList.Count,vertexList.Count];
+            pathMartix = new int[vertexList.Count, vertexList.Count];
+            for (int i = 0; i < VertexList.Count;i++ )
+            {
+                for (int j = 0; j < VertexList.Count;j++ )
+                {
+                    pathMartix[i, j] = i;
+                    if (i==j)
+                    {
+                        adjacencyMartix[i, j] = 0;
+                    }
+                    else
+                    {
+                        adjacencyMartix[i, j] = Int32.MaxValue;
+                    }
+                }
+            }
+            foreach (City city in vertexList)
+            {
+                foreach (Edge edge in city.NeighborList)
+                {
+                    int indesStart = vertexList.IndexOf(edge.Start);
+                    int indexEnd = vertexList.IndexOf(edge.End);
+                    adjacencyMartix[indesStart, indexEnd] = edge.Value;
+                }
+            }
+        }
+
+        public void Floyd()
+        {
+            UpdataAdjacencyMartix();
+            for (int k = 0; k < vertexList.Count; k++)
+            {
+                for (int i = 0; i < vertexList.Count; i++)
+                {
+                    for (int j = 0; j < vertexList.Count; j++)
+                    {
+                        if (adjacencyMartix[i,k] + adjacencyMartix[k,j] < adjacencyMartix[i,j])
+                        {
+                            adjacencyMartix[i, j] = adjacencyMartix[i, k] + adjacencyMartix[k, j];
+                            pathMartix[i,j] = pathMartix[k,j];
+                        }
+                    }
+                }
+            }
         }
     }
 }
