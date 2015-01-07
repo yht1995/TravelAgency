@@ -22,13 +22,13 @@ namespace TravelAgency
     {
         private ObservableCollection<Edge> edgeList;
         private AdjacencyGraph map;
-        private City start;
+        private City city;
 
         public CityEdit(City city,ref AdjacencyGraph map)
         {
             InitializeComponent();
             edgeList = new ObservableCollection<Edge>();
-            start = city;
+            this.city = city;
             this.longtitudeSign.SelectedIndex = city.Longitude > 0 ? 0 : 1;
             this.latitudeSign.SelectedIndex = city.Latitude > 0 ? 0 : 1;
             this.latitude.Text = Math.Abs(city.Latitude).ToString("F");
@@ -66,7 +66,7 @@ namespace TravelAgency
             if (this.cityList.SelectedValue != null)
             {
                 City end = map.FindCityByName(this.cityList.SelectedValue.ToString());
-                edgeList.Add(new Edge(start, end, 0));
+                edgeList.Add(new Edge(city, end, 0));
                 cityList.Items.Remove(cityList.SelectedItem);
             }
         }
@@ -82,28 +82,27 @@ namespace TravelAgency
         }
         private void UpdateCity()
         {
-            string name = this.cityName.Text;
-            string longitude = this.longtitudeSign.Text + this.longitude.Text;
-            string latitude = this.latitudeSign.Text + this.latitude.Text;
-            string transitFee = this.transitFee.Text;
-            this.start = new City(name,longitude,latitude,transitFee);
+            city.Name = this.cityName.Text;
+            city.Longitude = LongitudeClass.FromString(this.longtitudeSign.Text + this.longitude.Text);
+            city.Latitude = LatitudeClass.FromString(this.latitudeSign.Text + this.latitude.Text);
+            city.TransitFees = Convert.ToInt32(this.transitFee.Text);
+            city.ClearTag();
+            foreach (string tag in this.tagList.SelectedItems)
+            {
+                city.AddTag(tag);
+            }
         }
 
         private void Ok_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                map.RemoveVertex(city);
                 UpdateCity();
-                start.ClearTag();
-                foreach (string tag in this.tagList.SelectedItems)
-                {
-                    start.AddTag(tag);
-                }
-                map.RemoveVertex(start);
-                map.AddVertex(start);
+                map.AddVertex(city);
                 foreach (Edge edge in edgeList)
                 {
-                    map.AddEdge(start, edge.End, edge.Value);
+                    map.AddEdge(city, edge.End, edge.Value);
                 }
                 this.Close();
             }

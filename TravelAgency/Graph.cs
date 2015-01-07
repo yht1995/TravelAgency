@@ -43,8 +43,11 @@ namespace TravelAgency
 
         public void AddVertex(City vertex)
         {
-            this.vertexList.Add(vertex);
-            dictionary.Add(vertex.Name, vertex);
+            if (!VertexList.Contains(vertex))
+            {
+                this.vertexList.Add(vertex);
+                dictionary.Add(vertex.Name, vertex);
+            }
         }
 
         public void RemoveVertex(City vertex)

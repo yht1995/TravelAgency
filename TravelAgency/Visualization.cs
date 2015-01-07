@@ -44,12 +44,12 @@ namespace TravelAgency
             canva.Children.Clear();
             dictionary.Clear();
             double Width = canva.Width / (City.GetXmax() - City.GetXmin());
-            if (Width == 0)
+            if (Width == 0 || Width == Double.PositiveInfinity)
             {
                 Width = 20;
             }
             double Height = canva.Height / (City.GetYmax() - City.GetYmin());
-            if (Height == 0)
+            if (Height == 0 || Width == Double.PositiveInfinity)
             {
                 Height = 20;
             }
@@ -77,8 +77,8 @@ namespace TravelAgency
             ellipse.Fill = Brushes.Yellow;
             ellipse.StrokeThickness = 2;
             ellipse.Stroke = Brushes.Black;
-            ellipse.Height = 50;
-            ellipse.Width = 50;
+            ellipse.Height = 0.6 * scale;
+            ellipse.Width = 0.6 * scale;
             Canvas.SetZIndex(ellipse, 2);
             Canvas.SetLeft(ellipse, (vertex.GetCenterX() - Xoffset) * scale - ellipse.Width / 2);
             Canvas.SetBottom(ellipse, (vertex.GetCenterY() - Yoffset) * scale - ellipse.Height / 2);
@@ -122,8 +122,8 @@ namespace TravelAgency
                 try
                 {
                     CityEdit cityEdit = new CityEdit(city,ref map);
+                    cityEdit.Title = "编辑城市";
                     cityEdit.ShowDialog();
-                    map.RemoveVertex(city);
                     DrawGraph(map);
                 }
                 catch (System.Exception ex)
@@ -169,14 +169,14 @@ namespace TravelAgency
                             if (i == 0)
                             {
                                 Canvas.SetZIndex(result[i].line, 1);
-                                result[i].line.StrokeThickness = 4;
-                                result[i].line.Stroke = System.Windows.Media.Brushes.Blue;
+                                result[i].line.StrokeThickness = 3;
+                                result[i].line.Stroke = System.Windows.Media.Brushes.DarkBlue;
                             }
                             else
                             {
                                 Canvas.SetZIndex(result[i].line, 1);
-                                result[i].line.StrokeThickness = 4;
-                                result[i].line.Stroke = System.Windows.Media.Brushes.DeepPink;
+                                result[i].line.StrokeThickness = 3;
+                                result[i].line.Stroke = System.Windows.Media.Brushes.OrangeRed;
                             }
                         }
                     }
@@ -216,10 +216,6 @@ namespace TravelAgency
             if (city != null)
             {
                 OnVertexClickedEvent(city);
-                foreach (Edge edge in city.NeighborList)
-                {
-                    edge.line.Stroke = System.Windows.Media.Brushes.Pink;
-                }
             }
         }
 

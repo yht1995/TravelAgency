@@ -68,6 +68,7 @@ namespace TravelAgency
                 }
                 City city = new City("城市名称", LongitudeClass.ToString(geoLoc.X), LatitudeClass.ToString(geoLoc.Y), "100");
                 CityEdit cityEdit = new CityEdit(city,ref map);
+                cityEdit.Title = "添加城市";
                 cityEdit.ShowDialog();
                 visual.DrawGraph(map);
             }

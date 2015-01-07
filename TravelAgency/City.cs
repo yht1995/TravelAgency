@@ -178,9 +178,7 @@ namespace TravelAgency
 
         public bool Equals(City other)
         {
-            return (this.Name == other.Name &&
-                this.Latitude == other.Latitude &&
-                this.Longitude == other.Longitude);
+            return (this.Name == other.Name);
         }
 
         public void AddTag(string tag)
