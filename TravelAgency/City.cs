@@ -99,17 +99,39 @@ namespace TravelAgency
         public double Longitude
         {
             get { return longitude; }
-            private set { longitude = value; }
+            set 
+            {
+                longitude = value; 
+                if (this.longitude > City.longitudeMax)
+                {
+                    City.longitudeMax = this.longitude;
+                }
+                if (this.longitude < City.longitudeMin)
+                {
+                    City.longitudeMin = this.longitude;
+                }
+            }
         }
         public double Latitude
         {
             get { return latitude; }
-            set { latitude = value; }
+            set 
+            { 
+                latitude = value;
+                if (this.latitude > City.latitudeMax)
+                {
+                    City.latitudeMax = this.latitude;
+                }
+                if (this.latitude < City.latitudeMin)
+                {
+                    City.latitudeMin = this.latitude;
+                }
+            }
         }
         public string Name
         {
             get { return name; }
-            private set { name = value; }
+            set { name = value; }
         }
         public int TransitFees
         {
@@ -130,11 +152,17 @@ namespace TravelAgency
         #endregion
         public Ellipse ellipse;
         #region 公有方法
+        public City()
+        {
+            this.neighborList = new List<Edge>();
+            this.tags = new List<string>();
+        }
+
         public City(string name, string longitude, string latitude, string transitFees)
         {
             this.name = name;
-            this.latitude = LatitudeClass.FromString(latitude);
-            this.longitude = LongitudeClass.FromString(longitude);
+            this.Latitude = LatitudeClass.FromString(latitude);
+            this.Longitude = LongitudeClass.FromString(longitude);
             int result = new int();
             if (!int.TryParse(transitFees,out result))
             {
@@ -143,22 +171,6 @@ namespace TravelAgency
             this.transitFees = result;
             this.neighborList = new List<Edge>();
             this.tags = new List<string>();
-            if (this.latitude > City.latitudeMax)
-            {
-                City.latitudeMax = this.latitude;
-            }
-            if (this.latitude < City.latitudeMin)
-            {
-                City.latitudeMin = this.latitude;
-            }
-            if (this.longitude > City.longitudeMax)
-            {
-                City.longitudeMax = this.longitude;
-            }
-            if (this.longitude < City.longitudeMin)
-            {
-                City.longitudeMin = this.longitude;
-            }
         }
 
         public void AddEdge(City end, int edge)

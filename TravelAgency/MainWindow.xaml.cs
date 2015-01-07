@@ -63,17 +63,25 @@ namespace TravelAgency
                 map.RemoveVertex(this.cityName.Text);
                 visual.DrawGraph(map);
             }
-            catch (System.Exception ex)
+            catch (System.Exception)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show("无法删除");
             }
         }
 
         private void AddCity_Click(object sender, RoutedEventArgs e)
         {
-            CityEdit cityEdit = new CityEdit();
-            
-            cityEdit.Show();
+            try
+            {
+                Point geoLoc = visual.GetGeoLocaltion(Mouse.GetPosition(canva));
+                CityEdit cityEdit = new CityEdit(geoLoc.X, geoLoc.Y, map);
+                cityEdit.ShowDialog();
+                visual.DrawGraph(map);
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }

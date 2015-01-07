@@ -84,6 +84,7 @@ namespace TravelAgency
             dictionary.TryGetValue(start,out cstart);
             dictionary.TryGetValue(end, out cend);
             AddEdge(cstart, cend, edge);
+            AddEdge(cend, cstart, edge);
         }
 
         public void RemoveEdge(City start, City end)

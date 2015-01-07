@@ -157,5 +157,10 @@ namespace TravelAgency
                 }
             }
         }
+
+        public Point GetGeoLocaltion(Point canvaPos)
+        {
+            return new Point(canvaPos.X/scale+Xoffset,(canva.Height-canvaPos.Y)/scale+Yoffset);
+        }
     }
 }
