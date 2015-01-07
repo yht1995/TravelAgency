@@ -17,42 +17,17 @@ using System.Windows.Shapes;
 
 namespace TravelAgency
 {
-    public interface IVertexVisualization
-    {
-        double GetCenterX();
-        double GetCenterY();
-        double GetXmin();
-        double GetXmax();
-        double GetYmin();
-        double GetYmax();
-    }
+    public delegate void OnVertexClickedEventHandler<City> (City e);
 
-    public class Vertex<TVertex>
-    {
-        public TVertex vertex;
-        public Ellipse ellipse;
-
-        public Vertex (TVertex vertex,Ellipse ellipse)
-        {
-            this.vertex = vertex;
-            this.ellipse = ellipse;
-        }
-    }
-
-    public delegate void OnVertexClickedEventHandler<TVertex> (TVertex e);
-
-    public class Visualization<TVertex,TEdge>
-        where TVertex:IVertexVisualization
-        where TEdge : IEquatable<TEdge>, new()
+    public class Visualization
     {
         private Canvas canva;
         private double Xoffset;
         private double Yoffset;
         private double scale;
-        private List<Vertex<TVertex>> vertexList = new List<Vertex<TVertex>>();
-        private List<Edge<TVertex, TEdge>> edgeList = new List<Edge<TVertex, TEdge>>();
+        private Dictionary<Ellipse, City> dictionary;
 
-        public event OnVertexClickedEventHandler<TVertex> OnVertexClickedEvent;
+        public event OnVertexClickedEventHandler<City> OnVertexClickedEvent;
 
         public Canvas Canva
         {
@@ -62,31 +37,31 @@ namespace TravelAgency
         public Visualization(Canvas canva)
         {
             this.canva = canva;
+            dictionary = new Dictionary<Ellipse, City>();
         }
 
-        public void DrawGraph(AdjacencyGraph<TVertex,TEdge> graph)
+        public void DrawGraph(AdjacencyGraph graph)
         {
-            double Width = canva.Width/(graph.VertexList[0].GetXmax() - graph.VertexList[0].GetXmin());
-            double Height = canva.Height / (graph.VertexList[0].GetYmax() - graph.VertexList[0].GetYmin());
+            double Width = canva.Width / (City.GetXmax() - City.GetXmin());
+            double Height = canva.Height / (City.GetYmax() - City.GetYmin());
             scale = Math.Min(Width,Height);
-            Xoffset = graph.VertexList[0].GetXmin();
-            Yoffset = graph.VertexList[0].GetYmin();
-            foreach (TVertex vertex in graph.VertexList)
+            Xoffset = City.GetXmin();
+            Yoffset = City.GetYmin();
+            foreach (City vertex in graph.VertexList)
             {
-                foreach (Edge<TVertex, TEdge> edge in graph.GetEdgesofVertex(vertex))
+                foreach (Edge edge in graph.GeintsofVertex(vertex))
                 {
-                    edge.Line = DrawEdge(edge);
-                    edgeList.Add(edge);
+                    edge.line = DrawEdge(edge);
                 }
             }
-            foreach (TVertex vertex in graph.VertexList)
+            foreach (City vertex in graph.VertexList)
             {
-                Ellipse e = DrawVertex(vertex);
-                vertexList.Add(new Vertex<TVertex>(vertex,e));
+                vertex.ellipse = DrawVertex(vertex);
+                dictionary.Add(vertex.ellipse,vertex);
             }
         }
 
-        public Ellipse DrawVertex(TVertex vertex)
+        public Ellipse DrawVertex(City vertex)
         {
             SolidColorBrush mySolidColorBrush = new SolidColorBrush();
             mySolidColorBrush.Color = Color.FromArgb(255, 255, 255, 0);
@@ -107,36 +82,57 @@ namespace TravelAgency
         void ellipse_IsMouseDirectlyOverChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             Ellipse ellipse = sender as Ellipse;
+            City city;
+            dictionary.TryGetValue(ellipse, out city);
             if (ellipse.IsMouseDirectlyOver)
             {
                 SolidColorBrush mySolidColorBrush = new SolidColorBrush();
                 mySolidColorBrush.Color = Color.FromArgb(255, 255, 0, 0);
                 ellipse.Fill = mySolidColorBrush;
+                if (city != null)
+                {
+                    foreach (Edge edge in city.NeighborList)
+                    {
+                        edge.line.StrokeThickness = 4;
+                        edge.line.Stroke = System.Windows.Media.Brushes.Yellow;
+                    }
+                }
             }
             else
             {
                 SolidColorBrush mySolidColorBrush = new SolidColorBrush();
                 mySolidColorBrush.Color = Color.FromArgb(255, 255, 255, 0);
                 ellipse.Fill = mySolidColorBrush;
+                if (city != null)
+                {
+                    foreach (Edge edge in city.NeighborList)
+                    {
+                        edge.line.StrokeThickness = 1;
+                        edge.line.Stroke = System.Windows.Media.Brushes.LightSteelBlue;
+                    }
+                }
             }
+
         }
 
         void ellipse_MouseDown(object sender, MouseEventArgs e)
         {
-            foreach (Vertex<TVertex> vertex in vertexList)
+            City city;
+            dictionary.TryGetValue(sender as Ellipse, out city);
+            if (city != null)
             {
-                if (vertex.ellipse == (Ellipse)sender)
+                OnVertexClickedEvent(city);
+                foreach (Edge edge in city.NeighborList)
                 {
-                    OnVertexClickedEvent(vertex.vertex);
+                    edge.line.Stroke = System.Windows.Media.Brushes.Pink;
                 }
             }
         }
 
-
-
-        public Line DrawEdge(Edge<TVertex, TEdge> edge)
+        public Line DrawEdge(Edge edge)
         {
             Line line = new Line();
+            line.StrokeThickness = 1;
             line.Stroke = System.Windows.Media.Brushes.LightSteelBlue;
             line.X1 = (edge.GetStartX() - Xoffset) * scale;
             line.X2 = (edge.GetEndX() - Xoffset) * scale;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Shapes;
 using System.Text.RegularExpressions;
 using Microsoft.Office.Core;
 
@@ -83,8 +84,7 @@ namespace TravelAgency
     }
 
     [Serializable]
-    public class City
-        : IEquatable<City>,IVertexVisualization
+    public class City : IEquatable<City>
     {
         public static double longitudeMin = Double.PositiveInfinity;
         public static double longitudeMax;
@@ -124,6 +124,14 @@ namespace TravelAgency
                 transitFees = value; }
         }
 
+        private List<Edge> neighborList;
+
+        public List<Edge> NeighborList
+        {
+            get { return neighborList; }
+            set { neighborList = value; }
+        }
+       
         public City(string name, string longitude, string latitude, string transitFees)
         {
             this.name = name;
@@ -135,7 +143,7 @@ namespace TravelAgency
                 throw (new Exception("中转费非法"));
             }
             this.transitFees = result;
-
+            this.neighborList = new List<Edge>();
             if (this.latitude > City.latitudeMax)
             {
                 City.latitudeMax = this.latitude;
@@ -154,6 +162,31 @@ namespace TravelAgency
             }
         }
 
+        public void AddEdge(City end, int edge)
+        {
+            Edge e = new Edge(this, end, edge);
+            if (!neighborList.Contains(e))
+            {
+                this.neighborList.Add(e);
+            }
+        }
+
+        public void RemoveEdge(City end)
+        {
+            this.neighborList.RemoveAll(delegate(Edge a)
+            {
+                return (a.End == end);
+            });
+        }
+
+        public int GetEdge(City end)
+        {
+            return (this.neighborList.Find(delegate(Edge a)
+            {
+                return (a.End == end);
+            }).Value);
+        }
+
         public bool Equals(City other)
         {
             return (this.Name == other.Name &&
@@ -161,43 +194,36 @@ namespace TravelAgency
                 this.Longitude == other.Longitude);
         }
 
-        double IVertexVisualization.GetCenterX()
+        public double GetCenterX()
         {
             return longitude;
         }
 
-        double IVertexVisualization.GetCenterY()
+        public double GetCenterY()
         {
             return latitude;
         }
-        
-        //[NonSerialized]
-        //private System.Windows.Shapes.Ellipse ellipse;
 
-        //public System.Windows.Shapes.Ellipse Ellipse
-        //{
-        //    get { return ellipse; }
-        //    set { ellipse = value; }
-        //}
-
-        double IVertexVisualization.GetXmin()
+        public static double GetXmin()
         {
             return longitudeMin;
         }
 
-        double IVertexVisualization.GetXmax()
+        public static double GetXmax()
         {
             return longitudeMax;
         }
 
-        double IVertexVisualization.GetYmin()
+        public static double GetYmin()
         {
             return latitudeMin;
         }
 
-        double IVertexVisualization.GetYmax()
+        public static double GetYmax()
         {
             return latitudeMax;
         }
+        [NonSerialized]
+        public Ellipse ellipse;
     }
 }

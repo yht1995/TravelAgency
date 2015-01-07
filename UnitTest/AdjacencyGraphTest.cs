@@ -66,13 +66,13 @@ namespace UnitTest
         [TestMethod()]
         public void AddVertexEdgeTest()
         {
-            AdjacencyGraph<City, int> map = new AdjacencyGraph<City, int>();
+            AdjacencyGraph map = new AdjacencyGraph();
             City city1 = new City("北京", "东经 12.1", "北纬 23.2", "122");
             City city2 = new City("上海", "东经 12.1", "北纬 23.2", "122");
             map.AddVertex(city1);
             map.AddVertex(city2);
             map.AddEdge(city1, city2, 122);
-            Assert.AreEqual(map.AdjacencyMartix[0][1], 122);
+            Assert.AreEqual(map.GetEdge(city1,city2), 122);
         }
 
         /// <summary>
@@ -82,15 +82,15 @@ namespace UnitTest
         [TestMethod()]
         public void RemoveEdgeTest()
         {
-            AdjacencyGraph<City, int> map = new AdjacencyGraph<City, int>();
+            AdjacencyGraph map = new AdjacencyGraph();
             City city1 = new City("北京", "东经 12.1", "北纬 23.2", "122");
             City city2 = new City("上海", "东经 12.1", "北纬 23.2", "122");
             map.AddVertex(city1);
             map.AddVertex(city2);
             map.AddEdge(city1, city2, 122);
-            Assert.AreEqual(map.AdjacencyMartix[0][1], 122);
+            Assert.AreEqual(map.GetEdge(city1, city2), 122);
             map.RemoveEdge(city1, city2);
-            Assert.AreEqual(map.AdjacencyMartix[0][1], 0);
+            Assert.AreEqual(map.GetEdge(city1, city2), -1);
         }
 
         /// <summary>
@@ -99,13 +99,13 @@ namespace UnitTest
         [TestMethod()]
         public void RemoveVertexTest()
         {
-            AdjacencyGraph<City, int> map = new AdjacencyGraph<City, int>();
+            AdjacencyGraph map = new AdjacencyGraph();
             City city1 = new City("北京", "东经 12.1", "北纬 23.2", "122");
             City city2 = new City("上海", "东经 12.1", "北纬 23.2", "122");
             map.AddVertex(city1);
             map.AddVertex(city2);
             map.AddEdge(city1, city2, 122);
-            Assert.AreEqual(map.AdjacencyMartix[0][1], 122);
+            Assert.AreEqual(map.GetEdge(city1, city2), 122);
             map.RemoveVertex(city1);
             Assert.AreEqual(map.VertexList.Count, 1);
         }

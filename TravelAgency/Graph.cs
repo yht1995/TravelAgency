@@ -5,35 +5,36 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Windows.Shapes;
 
 namespace TravelAgency
 {
-    public class Edge<TVertex, TEdge>
-    where TVertex : IVertexVisualization
+    [Serializable]
+    public class Edge
     {
-        private TEdge value;
-        private TVertex start;
+        private int value;
+        private City start;
 
-        public TVertex Start
+        public City Start
         {
             get { return start; }
             set { start = value; }
         }
-        private TVertex end;
+        private City end;
 
-        public TVertex End
+        public City End
         {
             get { return end; }
             set { end = value; }
         }
 
-        public TEdge Value
+        public int Value
         {
             get { return this.value; }
             set { this.value = value; }
         }
 
-        public Edge(TVertex start, TVertex end, TEdge edge)
+        public Edge(City start, City end, int edge)
         {
             this.start = start;
             this.end = end;
@@ -59,106 +60,131 @@ namespace TravelAgency
         {
             return end.GetCenterY();
         }
-
-        private System.Windows.Shapes.Line line;
-
-        public System.Windows.Shapes.Line Line
-        {
-            get { return line; }
-            set { line = value; }
-        }
+        [NonSerialized]
+        public Line line;
     }
 
     [Serializable]
-    public class AdjacencyGraph<TVertex, TEdge>
-        where  TVertex : IVertexVisualization
-        where  TEdge : IEquatable<TEdge>, new()
+    public class AdjacencyGraph
     {
-        private List<TVertex> vertexList;
-        public List<TVertex> VertexList
+        private List<City> vertexList;
+        private Dictionary<string, City> dictionary;
+        public List<City> VertexList
         {
             get { return vertexList; }
             set { vertexList = value; }
         }
-        private List<List<TEdge>> adjacencyMartix;
-        public List<List<TEdge>> AdjacencyMartix
-        {
-            get { return adjacencyMartix; }
-            set { adjacencyMartix = value; }
-        }
+        //private List<List<int>> adjacencyMartix;
+        //public List<List<int>> AdjacencyMartix
+        //{
+        //    get { return adjacencyMartix; }
+        //    set { adjacencyMartix = value; }
+        //}
 
         public AdjacencyGraph()
         {
-            this.vertexList = new List<TVertex>();
-            this.adjacencyMartix = new List<List<TEdge>>();
+            this.vertexList = new List<City>();
+            this.dictionary = new Dictionary<string, City>();
+            //this.adjacencyMartix = new List<List<int>>();
         }
 
-        public void AddVertex(TVertex vertex)
+        public void AddVertex(City vertex)
         {
             this.vertexList.Add(vertex);
-            foreach (List<TEdge> line in this.adjacencyMartix)
+            dictionary.Add(vertex.Name, vertex);
+            //foreach (List<int> line in this.adjacencyMartix)
+            //{
+            //    line.Add(new int());
+            //}
+            //List<int> newline = new List<int>();
+            //for (int i = 0; i < this.vertexList.Count;i++ )
+            //{
+            //    newline.Add(new int());
+            //}
+            //this.adjacencyMartix.Add(newline);
+        }
+
+        public void RemoveVertex(City vertex)
+        {
+            foreach(Edge edge in vertex.NeighborList)
             {
-                line.Add(new TEdge());
+                edge.End.RemoveEdge(vertex);
             }
-            List<TEdge> newline = new List<TEdge>();
-            for (int i = 0; i < this.vertexList.Count;i++ )
+            this.VertexList.Remove(vertex);
+            dictionary.Remove(vertex.Name);
+        }
+
+        public void AddEdge(City start, City end, int edge)
+        {
+            start.AddEdge(end, edge);
+            end.AddEdge(start, edge);
+            //int indexStart = this.vertexList.IndexOf(start);
+            //int indexEnd = this.vertexList.IndexOf(end);
+            //this.adjacencyMartix[indexStart][indexEnd] = edge;
+            //this.adjacencyMartix[indexEnd][indexStart] = edge;
+        }
+
+        public void AddEdge(int start, int end, int edge)
+        {
+            City cstart, cend;
+            cstart = vertexList[start];
+            cend = vertexList[end];
+            AddEdge(cstart, cend, edge);
+            //int indexStart = this.vertexList.IndexOf(start);
+            //int indexEnd = this.vertexList.IndexOf(end);
+            //this.adjacencyMartix[indexStart][indexEnd] = edge;
+            //this.adjacencyMartix[indexEnd][indexStart] = edge;
+        }
+
+        public void AddEdge(string start, string end, int edge)
+        {
+            City cstart, cend;
+            dictionary.TryGetValue(start,out cstart);
+            dictionary.TryGetValue(end, out cend);
+            AddEdge(cstart, cend, edge);
+            //int indexStart = this.vertexList.IndexOf(start);
+            //int indexEnd = this.vertexList.IndexOf(end);
+            //this.adjacencyMartix[indexStart][indexEnd] = edge;
+            //this.adjacencyMartix[indexEnd][indexStart] = edge;
+        }
+
+        //public void AddEdge(int indexStart, int indexEnd, int edge)
+        //{
+        //    this.adjacencyMartix[indexStart][indexEnd] = edge;
+        //    this.adjacencyMartix[indexEnd][indexStart] = edge;
+        //}
+
+        public void RemoveEdge(City start, City end)
+        {
+            start.RemoveEdge(end);
+            end.RemoveEdge(start);
+            //int indexStart = this.vertexList.IndexOf(start);
+            //int indexEnd = this.vertexList.IndexOf(end);
+            //this.adjacencyMartix[indexStart][indexEnd] = default(int);
+            //this.adjacencyMartix[indexEnd][indexStart] = default(int);
+        }
+
+        public int GetEdge(City start,City end)
+        {
+            try
             {
-                newline.Add(new TEdge());
+                int edge = start.GetEdge(end);
+                return edge;
             }
-            this.adjacencyMartix.Add(newline);
-        }
-
-        public void RemoveVertex(TVertex vertex)
-        {
-            int index = this.vertexList.IndexOf(vertex);
-            foreach (List<TEdge> line in this.adjacencyMartix)
+            catch (System.Exception )
             {
-                line.RemoveAt(index);
+                return -1;
             }
-            this.adjacencyMartix.RemoveAt(index);
-            this.vertexList.RemoveAt(index);
         }
 
-        public void AddEdge(TVertex start, TVertex end, TEdge edge)
+        public List<Edge> GeintsofVertex(City vertex)
         {
-            int indexStart = this.vertexList.IndexOf(start);
-            int indexEnd = this.vertexList.IndexOf(end);
-            this.adjacencyMartix[indexStart][indexEnd] = edge;
-            this.adjacencyMartix[indexEnd][indexStart] = edge;
-        }
-
-        public void AddEdge(int indexStart, int indexEnd, TEdge edge)
-        {
-            this.adjacencyMartix[indexStart][indexEnd] = edge;
-            this.adjacencyMartix[indexEnd][indexStart] = edge;
-        }
-
-        public void RemoveEdge(TVertex start, TVertex end)
-        {
-            int indexStart = this.vertexList.IndexOf(start);
-            int indexEnd = this.vertexList.IndexOf(end);
-            this.adjacencyMartix[indexStart][indexEnd] = default(TEdge);
-            this.adjacencyMartix[indexEnd][indexStart] = default(TEdge);
-        }
-
-        public List<Edge<TVertex, TEdge>> GetEdgesofVertex(TVertex vertex)
-        {
-            List<Edge<TVertex, TEdge>> result = new List<Edge<TVertex, TEdge>>();
-            int index = this.vertexList.IndexOf(vertex);
-            for (int i = 0; i < adjacencyMartix[index].Count; i++)
-            {
-                if (!adjacencyMartix[index][i].Equals(default(TEdge)))
-                {
-                    result.Add(new Edge<TVertex, TEdge>(vertex, vertexList[i], adjacencyMartix[index][i]));
-                }
-            }
-            return result;
+            return vertex.NeighborList;
         }
 
         public void Clear()
         {
             this.VertexList.Clear();
-            this.adjacencyMartix.Clear();
         }
     }
 }

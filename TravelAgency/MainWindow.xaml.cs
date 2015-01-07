@@ -19,12 +19,12 @@ namespace TravelAgency
 {
     public partial class MainWindow : Window
     {
-        AdjacencyGraph<City, int> map = new AdjacencyGraph<City, int>();
-        Visualization<City, int> visual;
+        AdjacencyGraph map = new AdjacencyGraph();
+        Visualization visual;
         public MainWindow()
         {
             InitializeComponent();
-            visual = new Visualization<City, int>(this.canva);
+            visual = new Visualization(this.canva);
             visual.OnVertexClickedEvent += visual_OnVertexClickedEvent;
         }
 
@@ -48,7 +48,7 @@ namespace TravelAgency
             this.longitude.Text = LongitudeClass.ToString(city.Longitude);
             this.transitFee.Text = city.TransitFees.ToString();
             this.neighborList.Items.Clear();
-            foreach(Edge<City,int> e in map.GetEdgesofVertex(city))
+            foreach(Edge e in map.GeintsofVertex(city))
             {
                 this.neighborList.Items.Add(e.End.Name == city.Name?e.Start.Name:e.End.Name);
             }

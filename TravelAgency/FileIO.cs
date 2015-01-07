@@ -13,7 +13,7 @@ namespace TravelAgency
 {
     public static class FileIO
     {
-        public static bool ImportMap(AdjacencyGraph<City,int> map)
+        public static bool ImportMap(AdjacencyGraph map)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Title = "选择文件";
@@ -37,8 +37,7 @@ namespace TravelAgency
             }
             return false;
         }
-
-        public static void ExportMap(AdjacencyGraph<City, int> map)
+        public static void ExportMap(AdjacencyGraph map)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Title = "选择文件";
@@ -53,19 +52,18 @@ namespace TravelAgency
                 Stream fStream = new FileStream(filename, FileMode.Create, FileAccess.ReadWrite);
                 BinaryFormatter binFormat = new BinaryFormatter();
                 binFormat.Serialize(fStream, map.VertexList);
-                binFormat.Serialize(fStream, map.AdjacencyMartix);
+                //binFormat.Serialize(fStream, map.AdjacencyMartix);
                 fStream.Close();
             }
         }
-
-        private static void ImportFormBinMap(string path, AdjacencyGraph<City, int> map)
+        private static void ImportFormBinMap(string path, AdjacencyGraph map)
         {
             map.Clear();
             Stream fStream = new FileStream(path, FileMode.Open, FileAccess.Read);
             BinaryFormatter binFormat = new BinaryFormatter();
             fStream.Position = 0;
             map.VertexList = (List<City>)binFormat.Deserialize(fStream);
-            map.AdjacencyMartix = (List<List<int>>)binFormat.Deserialize(fStream);
+            //map.AdjacencyMartix = (List<List<int>>)binFormat.Deserialize(fStream);
             fStream.Close();
             foreach (City c in map.VertexList)
             {
@@ -87,8 +85,7 @@ namespace TravelAgency
                 }
             }
         }
-
-        private static void ImportFormExcel(string path,AdjacencyGraph<City,int> map)
+        private static void ImportFormExcel(string path,AdjacencyGraph map)
         {
             map.Clear();
             if (path == null)
