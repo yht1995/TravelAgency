@@ -26,7 +26,7 @@ namespace TravelAgency
         public MainWindow()
         {
             InitializeComponent();
-            visual = new Visualization(this.canva,map);
+            visual = new Visualization(this.canva,ref map);
             visual.OnVertexClickedEvent += visual_OnVertexClickedEvent;
         }
 
@@ -56,25 +56,18 @@ namespace TravelAgency
             }
         }
 
-        private void DeleteCity_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                map.RemoveVertex(this.cityName.Text);
-                visual.DrawGraph(map);
-            }
-            catch (System.Exception)
-            {
-                MessageBox.Show("无法删除");
-            }
-        }
-
         private void AddCity_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 Point geoLoc = visual.GetGeoLocaltion(Mouse.GetPosition(canva));
-                CityEdit cityEdit = new CityEdit(geoLoc.X, geoLoc.Y, map);
+                if (geoLoc.X == Double.PositiveInfinity)
+                {
+                    geoLoc.X = 25;
+                    geoLoc.Y = 40;
+                }
+                City city = new City("城市名称", LongitudeClass.ToString(geoLoc.X), LatitudeClass.ToString(geoLoc.Y), "100");
+                CityEdit cityEdit = new CityEdit(city,ref map);
                 cityEdit.ShowDialog();
                 visual.DrawGraph(map);
             }

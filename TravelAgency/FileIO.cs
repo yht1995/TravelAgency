@@ -69,22 +69,6 @@ namespace TravelAgency
             foreach (City c in map.VertexList)
             {
                 map.Dictionary.Add(c.Name, c);
-                if (c.Latitude > City.latitudeMax)
-                {
-                    City.latitudeMax = c.Latitude;
-                }
-                if (c.Latitude < City.latitudeMin)
-                {
-                    City.latitudeMin = c.Latitude;
-                }
-                if (c.Longitude > City.longitudeMax)
-                {
-                    City.longitudeMax = c.Longitude;
-                }
-                if (c.Longitude < City.longitudeMin)
-                {
-                    City.longitudeMin = c.Longitude;
-                }
             }
         }
         private static void ImportFormExcel(string path,AdjacencyGraph map)

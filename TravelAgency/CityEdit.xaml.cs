@@ -24,24 +24,40 @@ namespace TravelAgency
         private AdjacencyGraph map;
         private City start;
 
-        public CityEdit(double longitude,double latitude,AdjacencyGraph map)
+        public CityEdit(City city,ref AdjacencyGraph map)
         {
             InitializeComponent();
             edgeList = new ObservableCollection<Edge>();
-            start = new City();
-            this.longtitudeSign.SelectedIndex = longitude > 0 ? 0 : 1;
-            this.latitudeSign.SelectedIndex = latitude > 0 ? 0 : 1;
-            this.latitude.Text = Math.Abs(latitude).ToString("F");
-            this.longitude.Text = Math.Abs(longitude).ToString("F");
+            start = city;
+            this.longtitudeSign.SelectedIndex = city.Longitude > 0 ? 0 : 1;
+            this.latitudeSign.SelectedIndex = city.Latitude > 0 ? 0 : 1;
+            this.latitude.Text = Math.Abs(city.Latitude).ToString("F");
+            this.longitude.Text = Math.Abs(city.Longitude).ToString("F");
+            this.cityName.Text = city.Name;
+            this.transitFee.Text = city.TransitFees.ToString();
             this.edgeListView.ItemsSource = edgeList;
             this.map = map;
-            foreach (City city in map.VertexList)
+            foreach (City c in map.VertexList)
             {
-                this.cityList.Items.Add(city.Name);
+                if (city == c)
+                {
+                }
+                else if (city.GetEdge(c)==null)
+                {
+                    this.cityList.Items.Add(c.Name);
+                }
+                else
+                {
+                    edgeList.Add(city.GetEdge(c));
+                }
             }
             foreach (string tag in City.tagList)
             {
                 this.tagList.Items.Add(tag);
+                if (city.HasTag(tag))
+                {
+                    this.tagList.SelectedItems.Add(tag);
+                }
             }
         }
 
@@ -54,7 +70,6 @@ namespace TravelAgency
                 cityList.Items.Remove(cityList.SelectedItem);
             }
         }
-
 
         private void RemoveEdge_Click(object sender, RoutedEventArgs e)
         {
@@ -79,10 +94,12 @@ namespace TravelAgency
             try
             {
                 UpdateCity();
+                start.ClearTag();
                 foreach (string tag in this.tagList.SelectedItems)
                 {
                     start.AddTag(tag);
                 }
+                map.RemoveVertex(start);
                 map.AddVertex(start);
                 foreach (Edge edge in edgeList)
                 {
@@ -100,6 +117,5 @@ namespace TravelAgency
         {
             this.Close();
         }
-
     }
 }

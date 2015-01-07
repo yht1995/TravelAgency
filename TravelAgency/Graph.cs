@@ -160,13 +160,17 @@ namespace TravelAgency
 
         public List<Edge> ShortestPath(City start, City end)
         {
+            if (VertexList.Count <2)
+            {
+                return null;
+            }
             Stack<City> s = new Stack<City>();
             int indexStart,indexEnd;
             indexStart = vertexList.IndexOf(start);
             do 
             {
                 indexEnd = vertexList.IndexOf(end);
-                if (adjacencyMartix[indexStart, indexEnd] == Int32.MaxValue)
+                if (adjacencyMartix[indexStart, indexEnd] == 1000000)
                 {
                     return null;
                 }
@@ -188,6 +192,33 @@ namespace TravelAgency
             City result;
             dictionary.TryGetValue(name, out result);
             return result;
+        }
+
+        public void UpdateMinMax()
+        {
+            City.longitudeMin = Double.PositiveInfinity;
+            City.longitudeMax = Double.NegativeInfinity;
+            City.latitudeMin = Double.PositiveInfinity;
+            City.latitudeMax = Double.NegativeInfinity;
+            foreach (City c in VertexList)
+            {
+                if (c.Latitude > City.latitudeMax)
+                {
+                    City.latitudeMax = c.Latitude;
+                }
+                if (c.Latitude < City.latitudeMin)
+                {
+                    City.latitudeMin = c.Latitude;
+                }
+                if (c.Longitude > City.longitudeMax)
+                {
+                    City.longitudeMax = c.Longitude;
+                }
+                if (c.Longitude < City.longitudeMin)
+                {
+                    City.longitudeMin = c.Longitude;
+                }
+            }
         }
     }
 }

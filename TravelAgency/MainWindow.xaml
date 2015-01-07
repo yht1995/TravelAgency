@@ -12,7 +12,6 @@
             <zoom:ZoomControl.ContextMenu>
                 <ContextMenu>
                     <MenuItem x:Name="AddCity" Header="添加城市" Click="AddCity_Click"></MenuItem>
-                    <MenuItem x:Name="DeleteCity" Header ="删除城市" Click ="DeleteCity_Click"></MenuItem>
                 </ContextMenu>
             </zoom:ZoomControl.ContextMenu>
         </zoom:ZoomControl>

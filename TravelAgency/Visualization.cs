@@ -18,6 +18,7 @@ using System.Windows.Shapes;
 namespace TravelAgency
 {
     public delegate void OnVertexClickedEventHandler (City e);
+    public delegate void OnVertexEditEventHandler (City e);
 
     public class Visualization
     {
@@ -30,7 +31,7 @@ namespace TravelAgency
 
         public event OnVertexClickedEventHandler OnVertexClickedEvent;
 
-        public Visualization(Canvas canva,AdjacencyGraph map)
+        public Visualization(Canvas canva,ref AdjacencyGraph map)
         {
             this.canva = canva;
             this.map = map;
@@ -39,12 +40,22 @@ namespace TravelAgency
 
         public void DrawGraph(AdjacencyGraph graph)
         {
+            map.UpdateMinMax();
             canva.Children.Clear();
+            dictionary.Clear();
             double Width = canva.Width / (City.GetXmax() - City.GetXmin());
+            if (Width == 0)
+            {
+                Width = 20;
+            }
             double Height = canva.Height / (City.GetYmax() - City.GetYmin());
+            if (Height == 0)
+            {
+                Height = 20;
+            }
             scale = Math.Min(Width,Height);
-            Xoffset = City.GetXmin();
-            Yoffset = City.GetYmin();
+            Xoffset = (City.GetXmax() + City.GetXmin()) / 2 - canva.Width / scale / 2;
+            Yoffset = (City.GetYmax() + City.GetYmin()) / 2 - canva.Height / scale / 2;
             foreach (City vertex in graph.VertexList)
             {
                 foreach (Edge edge in graph.GeintsofVertex(vertex))
@@ -73,8 +84,53 @@ namespace TravelAgency
             Canvas.SetBottom(ellipse, (vertex.GetCenterY() - Yoffset) * scale - ellipse.Height / 2);
             canva.Children.Add(ellipse);
             ellipse.MouseDown += ellipse_MouseDown;
+            ContextMenu contextMenu = new ContextMenu();
+            MenuItem editCity = new MenuItem { Header = "编辑城市" };
+            editCity.Click += editCity_Click;
+            contextMenu.Items.Add(editCity);
+            MenuItem deleteCity = new MenuItem { Header = "删除城市" };
+            deleteCity.Click += deleteCity_Click;
+            contextMenu.Items.Add(deleteCity);
+            ellipse.ContextMenu = contextMenu;
             ellipse.IsMouseDirectlyOverChanged += ellipse_IsMouseDirectlyOverChanged;
             return ellipse;
+        }
+
+        void deleteCity_Click(object sender, RoutedEventArgs e)
+        {
+            Ellipse ellipse = ContextMenuService.GetPlacementTarget(LogicalTreeHelper.GetParent(sender as MenuItem)) as Ellipse;
+            City city;
+            dictionary.TryGetValue(ellipse, out city);
+            try
+            {
+                map.RemoveVertex(city);
+                DrawGraph(map);
+            }
+            catch (System.Exception)
+            {
+                MessageBox.Show("无法删除");
+            }
+        }
+
+        void editCity_Click(object sender, RoutedEventArgs e)
+        {
+            Ellipse ellipse = ContextMenuService.GetPlacementTarget(LogicalTreeHelper.GetParent(sender as MenuItem)) as Ellipse;
+            City city;
+            dictionary.TryGetValue(ellipse, out city);
+            if (city != null)
+            {
+                try
+                {
+                    CityEdit cityEdit = new CityEdit(city,ref map);
+                    cityEdit.ShowDialog();
+                    map.RemoveVertex(city);
+                    DrawGraph(map);
+                }
+                catch (System.Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
         }
 
         public Line DrawEdge(Edge edge)
@@ -104,6 +160,10 @@ namespace TravelAgency
                     foreach (City end in map.VertexList)
                     {
                         List<Edge> result = map.ShortestPath(city, end);
+                        if (result == null)
+                        {
+                            return;
+                        }
                         for (int i =0 ;i<result.Count;i++)
                         {
                             if (i == 0)
@@ -129,7 +189,12 @@ namespace TravelAgency
                 {
                     foreach (City end in map.VertexList)
                     {
-                        foreach (Edge edge in map.ShortestPath(city, end))
+                        List<Edge> result = map.ShortestPath(city, end);
+                        if (result == null)
+                        {
+                            return;
+                        }
+                        foreach (Edge edge in result)
                         {
                             if (edge != null)
                             {

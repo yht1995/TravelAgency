@@ -99,34 +99,12 @@ namespace TravelAgency
         public double Longitude
         {
             get { return longitude; }
-            set 
-            {
-                longitude = value; 
-                if (this.longitude > City.longitudeMax)
-                {
-                    City.longitudeMax = this.longitude;
-                }
-                if (this.longitude < City.longitudeMin)
-                {
-                    City.longitudeMin = this.longitude;
-                }
-            }
+            set { longitude = value;}
         }
         public double Latitude
         {
             get { return latitude; }
-            set 
-            { 
-                latitude = value;
-                if (this.latitude > City.latitudeMax)
-                {
-                    City.latitudeMax = this.latitude;
-                }
-                if (this.latitude < City.latitudeMin)
-                {
-                    City.latitudeMin = this.latitude;
-                }
-            }
+            set {latitude = value; }
         }
         public string Name
         {
@@ -221,6 +199,10 @@ namespace TravelAgency
         public bool HasTag(string tag)
         {
             return tags.Contains(tag);
+        }
+        public void ClearTag()
+        {
+            tags.Clear();
         }
 
         #endregion
