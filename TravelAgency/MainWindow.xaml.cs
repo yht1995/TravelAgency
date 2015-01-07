@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.Win32;
 
 namespace TravelAgency
 {
@@ -21,10 +22,11 @@ namespace TravelAgency
     {
         AdjacencyGraph map = new AdjacencyGraph();
         Visualization visual;
+
         public MainWindow()
         {
             InitializeComponent();
-            visual = new Visualization(this.canva);
+            visual = new Visualization(this.canva,map);
             visual.OnVertexClickedEvent += visual_OnVertexClickedEvent;
         }
 
@@ -52,6 +54,26 @@ namespace TravelAgency
             {
                 this.neighborList.Items.Add(e.End.Name == city.Name?e.Start.Name:e.End.Name);
             }
+        }
+
+        private void DeleteCity_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                map.RemoveVertex(this.cityName.Text);
+                visual.DrawGraph(map);
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void AddCity_Click(object sender, RoutedEventArgs e)
+        {
+            CityEdit cityEdit = new CityEdit();
+            
+            cityEdit.Show();
         }
     }
 }

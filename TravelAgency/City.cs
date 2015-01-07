@@ -86,33 +86,31 @@ namespace TravelAgency
     [Serializable]
     public class City : IEquatable<City>
     {
-        public static double longitudeMin = Double.PositiveInfinity;
-        public static double longitudeMax;
-        public static double latitudeMin = Double.PositiveInfinity;
-        public static double latitudeMax;
-
+        #region 私有成员
         private string name;
         private double longitude;   //经度
+        private double latitude;  //纬度
+        private int transitFees;
+        private List<Edge> neighborList;
+        private List<string> tags;
+        #endregion
+
+        #region 属性
         public double Longitude
         {
             get { return longitude; }
             private set { longitude = value; }
         }
-        private double latitude;  //纬度
-
         public double Latitude
         {
             get { return latitude; }
             set { latitude = value; }
         }
-        private int transitFees;
-
         public string Name
         {
             get { return name; }
             private set { name = value; }
         }
-
         public int TransitFees
         {
             get { return transitFees; }
@@ -123,15 +121,15 @@ namespace TravelAgency
                 }
                 transitFees = value; }
         }
-
-        private List<Edge> neighborList;
-
         public List<Edge> NeighborList
         {
             get { return neighborList; }
             set { neighborList = value; }
         }
-       
+        [NonSerialized]
+        #endregion
+        public Ellipse ellipse;
+        #region 公有方法
         public City(string name, string longitude, string latitude, string transitFees)
         {
             this.name = name;
@@ -144,6 +142,7 @@ namespace TravelAgency
             }
             this.transitFees = result;
             this.neighborList = new List<Edge>();
+            this.tags = new List<string>();
             if (this.latitude > City.latitudeMax)
             {
                 City.latitudeMax = this.latitude;
@@ -179,12 +178,12 @@ namespace TravelAgency
             });
         }
 
-        public int GetEdge(City end)
+        public Edge GetEdge(City end)
         {
             return (this.neighborList.Find(delegate(Edge a)
             {
                 return (a.End == end);
-            }).Value);
+            }));
         }
 
         public bool Equals(City other)
@@ -194,6 +193,25 @@ namespace TravelAgency
                 this.Longitude == other.Longitude);
         }
 
+        public void AddTag(string tag)
+        {
+            if (tagList.Contains(tag))
+            {
+                tags.Add(tag);
+            }
+        }
+
+        public void RemoveTag(string tag)
+        {
+            tags.Remove(tag);
+        }
+
+        public bool HasTag(string tag)
+        {
+            return tags.Contains(tag);
+        }
+
+        #endregion
         public double GetCenterX()
         {
             return longitude;
@@ -204,6 +222,7 @@ namespace TravelAgency
             return latitude;
         }
 
+        #region 静态方法和成员
         public static double GetXmin()
         {
             return longitudeMin;
@@ -223,7 +242,19 @@ namespace TravelAgency
         {
             return latitudeMax;
         }
-        [NonSerialized]
-        public Ellipse ellipse;
+
+        public static double longitudeMin = Double.PositiveInfinity;
+        public static double longitudeMax = Double.NegativeInfinity;
+        public static double latitudeMin = Double.PositiveInfinity;
+        public static double latitudeMax = Double.NegativeInfinity;
+        public static List<string> tagList = new List<string>();
+        public static void AddTagType(string tag)
+        {
+            if (!tagList.Contains(tag))
+            {
+                tagList.Add(tag);
+            }
+        }
+        #endregion
     }
 }

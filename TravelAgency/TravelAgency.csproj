@@ -57,8 +57,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CityEdit.xaml.cs">
+      <DependentUpon>CityEdit.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Edge.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="Visualization.cs" />
+    <Page Include="CityEdit.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

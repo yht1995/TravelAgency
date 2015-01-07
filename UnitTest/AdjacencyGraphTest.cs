@@ -113,23 +113,21 @@ namespace UnitTest
         /// <summary>
         ///UpdataAdjacencyMartix 的测试
         ///</summary>
-        [TestMethod()]
-        public void UpdataAdjacencyMartixTest()
-        {
-            AdjacencyGraph map = new AdjacencyGraph();
-            City city1 = new City("北京", "东经 12.1", "北纬 23.2", "122");
-            City city2 = new City("上海", "东经 12.1", "北纬 23.2", "122");
-            map.AddVertex(city1);
-            map.AddVertex(city2);
-            map.AddEdge(city1, city2, 122);
-            Assert.AreEqual(map.GetEdge(city1, city2), 122);
-            map.UpdataAdjacencyMartix();
-            Assert.AreEqual(map.AdjacencyMartix[0, 0], 0);
-            Assert.AreEqual(map.AdjacencyMartix[0, 1], 122);
-            Assert.AreEqual(map.AdjacencyMartix[1, 0], 122);
-            Assert.AreEqual(map.AdjacencyMartix[1, 1], 0);
-
-
-        }
+        //[TestMethod()]
+        //public void UpdataAdjacencyMartixTest()
+        //{
+        //    AdjacencyGraph map = new AdjacencyGraph();
+        //    City city1 = new City("北京", "东经 12.1", "北纬 23.2", "122");
+        //    City city2 = new City("上海", "东经 12.1", "北纬 23.2", "122");
+        //    map.AddVertex(city1);
+        //    map.AddVertex(city2);
+        //    map.AddEdge(city1, city2, 122);
+        //    Assert.AreEqual(map.GetEdge(city1, city2), 122);
+        //    map.UpdataAdjacencyMartix();
+        //    Assert.AreEqual(map.AdjacencyMartix[0, 0], 0);
+        //    Assert.AreEqual(map.AdjacencyMartix[0, 1], 122);
+        //    Assert.AreEqual(map.AdjacencyMartix[1, 0], 122);
+        //    Assert.AreEqual(map.AdjacencyMartix[1, 1], 0);
+        //}
     }
 }

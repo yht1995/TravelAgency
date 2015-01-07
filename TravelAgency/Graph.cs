@@ -10,65 +10,16 @@ using System.Windows.Shapes;
 namespace TravelAgency
 {
     [Serializable]
-    public class Edge
-    {
-        private int value;
-        private City start;
-
-        public City Start
-        {
-            get { return start; }
-            set { start = value; }
-        }
-        private City end;
-
-        public City End
-        {
-            get { return end; }
-            set { end = value; }
-        }
-
-        public int Value
-        {
-            get { return this.value; }
-            set { this.value = value; }
-        }
-
-        public Edge(City start, City end, int edge)
-        {
-            this.start = start;
-            this.end = end;
-            this.value = edge;
-        }
-
-        public double GetStartX()
-        {
-            return start.GetCenterX();
-        }
-
-        public double GetStartY()
-        {
-            return start.GetCenterY();
-        }
-
-        public double GetEndX()
-        {
-            return end.GetCenterX();
-        }
-
-        public double GetEndY()
-        {
-            return end.GetCenterY();
-        }
-        [NonSerialized]
-        public Line line;
-    }
-
-    [Serializable]
     public class AdjacencyGraph
     {
         private List<City> vertexList;
         private Dictionary<string, City> dictionary;
+
+        public Dictionary<string, City> Dictionary
+        {
+            get { return dictionary; }
+            set { dictionary = value; }
+        }
         private int[,] adjacencyMartix;
         private int[,] pathMartix;
 
@@ -106,6 +57,13 @@ namespace TravelAgency
             dictionary.Remove(vertex.Name);
         }
 
+        public void RemoveVertex(string vertex)
+        {
+            City city;
+            dictionary.TryGetValue(vertex, out city);
+            RemoveVertex(city);
+        }
+
         public void AddEdge(City start, City end, int edge)
         {
             start.AddEdge(end, edge);
@@ -138,7 +96,7 @@ namespace TravelAgency
         {
             try
             {
-                int edge = start.GetEdge(end);
+                int edge = start.GetEdge(end).Value;
                 return edge;
             }
             catch (System.Exception )
@@ -166,23 +124,16 @@ namespace TravelAgency
                 for (int j = 0; j < VertexList.Count;j++ )
                 {
                     pathMartix[i, j] = i;
-                    if (i==j)
-                    {
-                        adjacencyMartix[i, j] = 0;
-                    }
-                    else
-                    {
-                        adjacencyMartix[i, j] = Int32.MaxValue;
-                    }
+                    adjacencyMartix[i, j] = 1000000;
                 }
             }
             foreach (City city in vertexList)
             {
                 foreach (Edge edge in city.NeighborList)
                 {
-                    int indesStart = vertexList.IndexOf(edge.Start);
+                    int indexStart = vertexList.IndexOf(edge.Start);
                     int indexEnd = vertexList.IndexOf(edge.End);
-                    adjacencyMartix[indesStart, indexEnd] = edge.Value;
+                    adjacencyMartix[indexStart, indexEnd] = edge.Value;
                 }
             }
         }
@@ -204,6 +155,38 @@ namespace TravelAgency
                     }
                 }
             }
+        }
+
+        public List<Edge> ShortestPath(City start, City end)
+        {
+            Stack<City> s = new Stack<City>();
+            int indexStart,indexEnd;
+            indexStart = vertexList.IndexOf(start);
+            do 
+            {
+                indexEnd = vertexList.IndexOf(end);
+                if (adjacencyMartix[indexStart, indexEnd] == Int32.MaxValue)
+                {
+                    return null;
+                }
+                s.Push(end);
+                end = vertexList[pathMartix[indexStart,indexEnd]];
+            } while (pathMartix[indexStart,indexEnd] != indexStart);
+            List<Edge> result = new List<Edge>();
+            while (s.Count != 0)
+            {
+                Edge edge = start.GetEdge(s.Pop());
+                result.Add(edge);
+                start = edge.End;
+            }
+            return result;
+        }
+
+        public City FindCityByName(string name)
+        {
+            City result;
+            dictionary.TryGetValue(name, out result);
+            return result;
         }
     }
 }

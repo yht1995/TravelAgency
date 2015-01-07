@@ -17,31 +17,29 @@ using System.Windows.Shapes;
 
 namespace TravelAgency
 {
-    public delegate void OnVertexClickedEventHandler<City> (City e);
+    public delegate void OnVertexClickedEventHandler (City e);
 
     public class Visualization
     {
         private Canvas canva;
+        private AdjacencyGraph map;
         private double Xoffset;
         private double Yoffset;
         private double scale;
         private Dictionary<Ellipse, City> dictionary;
 
-        public event OnVertexClickedEventHandler<City> OnVertexClickedEvent;
+        public event OnVertexClickedEventHandler OnVertexClickedEvent;
 
-        public Canvas Canva
-        {
-            set { canva = value; }
-        }
-
-        public Visualization(Canvas canva)
+        public Visualization(Canvas canva,AdjacencyGraph map)
         {
             this.canva = canva;
+            this.map = map;
             dictionary = new Dictionary<Ellipse, City>();
         }
 
         public void DrawGraph(AdjacencyGraph graph)
         {
+            canva.Children.Clear();
             double Width = canva.Width / (City.GetXmax() - City.GetXmin());
             double Height = canva.Height / (City.GetYmax() - City.GetYmin());
             scale = Math.Min(Width,Height);
@@ -59,18 +57,18 @@ namespace TravelAgency
                 vertex.ellipse = DrawVertex(vertex);
                 dictionary.Add(vertex.ellipse,vertex);
             }
+            map.Floyd();
         }
 
         public Ellipse DrawVertex(City vertex)
         {
-            SolidColorBrush mySolidColorBrush = new SolidColorBrush();
-            mySolidColorBrush.Color = Color.FromArgb(255, 255, 255, 0);
             Ellipse ellipse = new Ellipse();
-            ellipse.Fill = mySolidColorBrush;
+            ellipse.Fill = Brushes.Yellow;
             ellipse.StrokeThickness = 2;
             ellipse.Stroke = Brushes.Black;
-            ellipse.Height = 40;
-            ellipse.Width = 40;
+            ellipse.Height = 50;
+            ellipse.Width = 50;
+            Canvas.SetZIndex(ellipse, 2);
             Canvas.SetLeft(ellipse, (vertex.GetCenterX() - Xoffset) * scale - ellipse.Width / 2);
             Canvas.SetBottom(ellipse, (vertex.GetCenterY() - Yoffset) * scale - ellipse.Height / 2);
             canva.Children.Add(ellipse);
@@ -79,6 +77,20 @@ namespace TravelAgency
             return ellipse;
         }
 
+        public Line DrawEdge(Edge edge)
+        {
+            Line line = new Line();
+            line.StrokeThickness = 0.5;
+            line.Stroke = System.Windows.Media.Brushes.LightSteelBlue;
+            line.X1 = (edge.GetStartX() - Xoffset) * scale;
+            line.X2 = (edge.GetEndX() - Xoffset) * scale;
+            line.Y1 = canva.Height - ((edge.GetStartY() - Yoffset) * scale);
+            line.Y2 = canva.Height - ((edge.GetEndY() - Yoffset) * scale);
+            line.VerticalAlignment = VerticalAlignment.Bottom;
+            line.HorizontalAlignment = HorizontalAlignment.Left;
+            this.canva.Children.Add(line);
+            return line;
+        }
         void ellipse_IsMouseDirectlyOverChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             Ellipse ellipse = sender as Ellipse;
@@ -86,33 +98,50 @@ namespace TravelAgency
             dictionary.TryGetValue(ellipse, out city);
             if (ellipse.IsMouseDirectlyOver)
             {
-                SolidColorBrush mySolidColorBrush = new SolidColorBrush();
-                mySolidColorBrush.Color = Color.FromArgb(255, 255, 0, 0);
-                ellipse.Fill = mySolidColorBrush;
+                ellipse.Fill = Brushes.YellowGreen;
                 if (city != null)
                 {
-                    foreach (Edge edge in city.NeighborList)
+                    foreach (City end in map.VertexList)
                     {
-                        edge.line.StrokeThickness = 4;
-                        edge.line.Stroke = System.Windows.Media.Brushes.Yellow;
+                        List<Edge> result = map.ShortestPath(city, end);
+                        for (int i =0 ;i<result.Count;i++)
+                        {
+                            if (i == 0)
+                            {
+                                Canvas.SetZIndex(result[i].line, 1);
+                                result[i].line.StrokeThickness = 4;
+                                result[i].line.Stroke = System.Windows.Media.Brushes.Blue;
+                            }
+                            else
+                            {
+                                Canvas.SetZIndex(result[i].line, 1);
+                                result[i].line.StrokeThickness = 4;
+                                result[i].line.Stroke = System.Windows.Media.Brushes.DeepPink;
+                            }
+                        }
                     }
                 }
             }
             else
             {
-                SolidColorBrush mySolidColorBrush = new SolidColorBrush();
-                mySolidColorBrush.Color = Color.FromArgb(255, 255, 255, 0);
-                ellipse.Fill = mySolidColorBrush;
+                ellipse.Fill = Brushes.Yellow;
                 if (city != null)
                 {
-                    foreach (Edge edge in city.NeighborList)
+                    foreach (City end in map.VertexList)
                     {
-                        edge.line.StrokeThickness = 1;
-                        edge.line.Stroke = System.Windows.Media.Brushes.LightSteelBlue;
+                        foreach (Edge edge in map.ShortestPath(city, end))
+                        {
+                            if (edge != null)
+                            {
+                                Canvas.SetZIndex(edge.line, 0);
+                                edge.line.StrokeThickness = 0.5;
+                                edge.line.Stroke = System.Windows.Media.Brushes.LightSteelBlue;
+                            }
+                            
+                        }
                     }
                 }
             }
-
         }
 
         void ellipse_MouseDown(object sender, MouseEventArgs e)
@@ -127,21 +156,6 @@ namespace TravelAgency
                     edge.line.Stroke = System.Windows.Media.Brushes.Pink;
                 }
             }
-        }
-
-        public Line DrawEdge(Edge edge)
-        {
-            Line line = new Line();
-            line.StrokeThickness = 1;
-            line.Stroke = System.Windows.Media.Brushes.LightSteelBlue;
-            line.X1 = (edge.GetStartX() - Xoffset) * scale;
-            line.X2 = (edge.GetEndX() - Xoffset) * scale;
-            line.Y1 = canva.Height - ((edge.GetStartY() - Yoffset) * scale);
-            line.Y2 = canva.Height - ((edge.GetEndY() - Yoffset) * scale);
-            line.VerticalAlignment = VerticalAlignment.Bottom;
-            line.HorizontalAlignment = HorizontalAlignment.Left;
-            this.canva.Children.Add(line);
-            return line;
         }
     }
 }

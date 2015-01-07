@@ -7,8 +7,14 @@
         Title="MainWindow" Height="700" Width="1000" WindowStyle="ThreeDBorderWindow">
 
     <Grid>
-        <zoom:ZoomControl Margin="0,0,0,180" >
-            <Canvas HorizontalAlignment="Center" Height="1800" VerticalAlignment="Center" Width="3600" Name="canva"/>
+        <zoom:ZoomControl Margin="0,0,250,180" >
+            <Canvas HorizontalAlignment="Center" Height="1800" VerticalAlignment="Center" Width="3600" Name="canva"></Canvas>
+            <zoom:ZoomControl.ContextMenu>
+                <ContextMenu>
+                    <MenuItem x:Name="AddCity" Header="添加城市" Click="AddCity_Click"></MenuItem>
+                    <MenuItem x:Name="DeleteCity" Header ="删除城市" Click ="DeleteCity_Click"></MenuItem>
+                </ContextMenu>
+            </zoom:ZoomControl.ContextMenu>
         </zoom:ZoomControl>
         <TabControl Height="200" VerticalAlignment="Bottom">
             <TabItem Header="城市和路径">
@@ -22,17 +28,15 @@
                     <GroupBox Header="城市" HorizontalAlignment="Left" Margin="150,10,0,10" Width="400">
                         <Grid>
                             <Label Content="城市名" HorizontalAlignment="Left" Margin="9,8,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.565,1.64"/>
-                            <TextBox x:Name="cityName" HorizontalAlignment="Left" Height="23" Margin="60,10,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="90"/>
+                            <TextBox x:Name="cityName" HorizontalAlignment="Left" Height="23" Margin="60,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="90"/>
                             <Label Content="经度" HorizontalAlignment="Left" Margin="10,38,0,0" VerticalAlignment="Top"/>
-                            <TextBox x:Name="longitude" HorizontalAlignment="Left" Height="23" Margin="60,40,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="90"/>
+                            <TextBox x:Name="longitude" HorizontalAlignment="Left" Height="23" Margin="60,40,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="90"/>
                             <Label Content="纬度" HorizontalAlignment="Left" Margin="10,68,0,0" VerticalAlignment="Top"/>
-                            <TextBox x:Name="latitude" HorizontalAlignment="Left" Height="23" Margin="60,70,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="90"/>
+                            <TextBox x:Name="latitude" HorizontalAlignment="Left" Height="23" Margin="60,70,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="90"/>
                             <Label Content="中转费" HorizontalAlignment="Left" Margin="10,98,0,0" VerticalAlignment="Top"/>
-                            <TextBox x:Name="transitFee" HorizontalAlignment="Left" Height="23" Margin="60,100,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="90"/>
+                            <TextBox x:Name="transitFee" HorizontalAlignment="Left" Height="23" Margin="60,100,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="90"/>
                             <ListBox x:Name="neighborList" Margin="230,30,10,10"/>
                             <Label Content="相邻城市" HorizontalAlignment="Left" Margin="230,5,0,0" VerticalAlignment="Top"/>
-                            <Button Content="添加" HorizontalAlignment="Left" Margin="166,70,0,0" VerticalAlignment="Top" Width="50" Height="23"/>
-                            <Button Content="删除" HorizontalAlignment="Left" Margin="166,100,0,0" VerticalAlignment="Top" Width="50" Height="23"/>
                         </Grid>
                     </GroupBox>
                     <GroupBox Header="路径" HorizontalAlignment="Left" Margin="580,10,0,10" Width="300">
@@ -46,5 +50,12 @@
                 <Grid Background="#FFE5E5E5"/>
             </TabItem>
         </TabControl>
+        <ListView HorizontalAlignment="Right" Width="250" Margin="0,0,0,180">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header=""/>
+                </GridView>
+            </ListView.View>
+        </ListView>
     </Grid>
 </Window>

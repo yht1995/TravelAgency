@@ -52,7 +52,7 @@ namespace TravelAgency
                 Stream fStream = new FileStream(filename, FileMode.Create, FileAccess.ReadWrite);
                 BinaryFormatter binFormat = new BinaryFormatter();
                 binFormat.Serialize(fStream, map.VertexList);
-                //binFormat.Serialize(fStream, map.AdjacencyMartix);
+                binFormat.Serialize(fStream, City.tagList);
                 fStream.Close();
             }
         }
@@ -63,10 +63,12 @@ namespace TravelAgency
             BinaryFormatter binFormat = new BinaryFormatter();
             fStream.Position = 0;
             map.VertexList = (List<City>)binFormat.Deserialize(fStream);
-            //map.AdjacencyMartix = (List<List<int>>)binFormat.Deserialize(fStream);
+            City.tagList = (List<string>)binFormat.Deserialize(fStream);
             fStream.Close();
+            map.Dictionary.Clear();
             foreach (City c in map.VertexList)
             {
+                map.Dictionary.Add(c.Name, c);
                 if (c.Latitude > City.latitudeMax)
                 {
                     City.latitudeMax = c.Latitude;
@@ -113,6 +115,26 @@ namespace TravelAgency
                         int distance = Convert.ToInt32(mapSheet.Cells[i, j].Value2);
                         map.AddEdge(i - 2, j - 5, distance);
                     }
+                    j++;
+                }
+                i++;
+            }
+            i = 1;
+            mapSheet = workbook.Sheets[3];
+            while (mapSheet.Cells[i, 1].Value2 != null)
+            {
+                City.AddTagType(mapSheet.Cells[i, 1].Value2);
+                i++;
+            }
+            i = 1;
+            mapSheet = workbook.Sheets[2];
+            while (mapSheet.Cells[i, 1].Value2 != null)
+            {
+                City city = map.FindCityByName(mapSheet.Cells[i, 1].Value2);
+                int j = 1;
+                while (mapSheet.Cells[i, j + 1].Value2 != null)
+                {
+                    city.AddTag(mapSheet.Cells[i, j].Value2);
                     j++;
                 }
                 i++;
