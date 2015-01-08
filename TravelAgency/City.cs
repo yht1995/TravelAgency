@@ -9,6 +9,181 @@ using Microsoft.Office.Core;
 
 namespace TravelAgency
 {
+    [Serializable]
+    public class City : IEquatable<City>
+    {
+        #region 私有成员
+        private string name;
+        private double longitude;   //经度
+        private double latitude;  //纬度
+        private int transitFees;
+        private List<Edge> neighborList;
+        private List<string> tags;
+
+        #endregion
+
+        #region 属性
+        public double Longitude
+        {
+            get { return longitude; }
+            set { longitude = value;}
+        }
+        public double Latitude
+        {
+            get { return latitude; }
+            set {latitude = value; }
+        }
+        public string Name
+        {
+            get { return name; }
+            set { name = value; }
+        }
+        public int TransitFees
+        {
+            get { return transitFees; }
+            set {
+                if (value < 0)
+                {
+                    throw (new Exception("中转费非法"));
+                }
+                transitFees = value; }
+        }
+        public List<Edge> NeighborList
+        {
+            get { return neighborList; }
+            set { neighborList = value; }
+        }
+        public List<string> Tags
+        {
+            get { return tags; }
+            set { tags = value; }
+        }
+        #endregion
+        [NonSerialized]
+        public Ellipse ellipse;
+        #region 公有方法
+        public City()
+        {
+            this.neighborList = new List<Edge>();
+            this.tags = new List<string>();
+        }
+
+        public City(string name, string longitude, string latitude, string transitFees)
+        {
+            this.name = name;
+            this.Latitude = LatitudeClass.FromString(latitude);
+            this.Longitude = LongitudeClass.FromString(longitude);
+            int result = new int();
+            if (!int.TryParse(transitFees,out result))
+            {
+                throw (new Exception("中转费非法"));
+            }
+            this.transitFees = result;
+            this.neighborList = new List<Edge>();
+            this.tags = new List<string>();
+        }
+
+        public void AddEdge(City end, int edge)
+        {
+            Edge e = new Edge(this, end, edge);
+            if (!neighborList.Contains(e))
+            {
+                this.neighborList.Add(e);
+            }
+        }
+
+        public void RemoveEdge(City end)
+        {
+            this.neighborList.RemoveAll(delegate(Edge a)
+            {
+                return (a.End == end);
+            });
+        }
+
+        public Edge GetEdge(City end)
+        {
+            return (this.neighborList.Find(delegate(Edge a)
+            {
+                return (a.End == end);
+            }));
+        }
+
+        public bool Equals(City other)
+        {
+            return (this.Name == other.Name);
+        }
+
+        public void AddTag(string tag)
+        {
+            if (tagList.Contains(tag))
+            {
+                tags.Add(tag);
+            }
+        }
+
+        public void RemoveTag(string tag)
+        {
+            tags.Remove(tag);
+        }
+
+        public bool HasTag(string tag)
+        {
+            return tags.Contains(tag);
+        }
+
+        public void ClearTag()
+        {
+            tags.Clear();
+        }
+
+        #endregion
+        public double GetCenterX()
+        {
+            return longitude;
+        }
+
+        public double GetCenterY()
+        {
+            return latitude;
+        }
+
+        #region 静态方法和成员
+        public static double GetXmin()
+        {
+            return longitudeMin;
+        }
+
+        public static double GetXmax()
+        {
+            return longitudeMax;
+        }
+
+        public static double GetYmin()
+        {
+            return latitudeMin;
+        }
+
+        public static double GetYmax()
+        {
+            return latitudeMax;
+        }
+
+        public static double longitudeMin = Double.PositiveInfinity;
+        public static double longitudeMax = Double.NegativeInfinity;
+        public static double latitudeMin = Double.PositiveInfinity;
+        public static double latitudeMax = Double.NegativeInfinity;
+        public static List<string> tagList = new List<string>();
+        public static Dictionary<string, int> tagDictionary = new Dictionary<string, int>();
+        public static void AddTagType(string tag)
+        {
+            if (!tagList.Contains(tag))
+            {
+                tagList.Add(tag);
+                tagDictionary.Add(tag, tagList.Count - 1);
+            }
+        }
+        #endregion
+    }
     public static class LatitudeClass
     {
         public static double FromString(string s)
@@ -83,170 +258,4 @@ namespace TravelAgency
         }
     }
 
-    [Serializable]
-    public class City : IEquatable<City>
-    {
-        #region 私有成员
-        private string name;
-        private double longitude;   //经度
-        private double latitude;  //纬度
-        private int transitFees;
-        private List<Edge> neighborList;
-        private List<string> tags;
-        #endregion
-
-        #region 属性
-        public double Longitude
-        {
-            get { return longitude; }
-            set { longitude = value;}
-        }
-        public double Latitude
-        {
-            get { return latitude; }
-            set {latitude = value; }
-        }
-        public string Name
-        {
-            get { return name; }
-            set { name = value; }
-        }
-        public int TransitFees
-        {
-            get { return transitFees; }
-            set {
-                if (value < 0)
-                {
-                    throw (new Exception("中转费非法"));
-                }
-                transitFees = value; }
-        }
-        public List<Edge> NeighborList
-        {
-            get { return neighborList; }
-            set { neighborList = value; }
-        }
-        [NonSerialized]
-        #endregion
-        public Ellipse ellipse;
-        #region 公有方法
-        public City()
-        {
-            this.neighborList = new List<Edge>();
-            this.tags = new List<string>();
-        }
-
-        public City(string name, string longitude, string latitude, string transitFees)
-        {
-            this.name = name;
-            this.Latitude = LatitudeClass.FromString(latitude);
-            this.Longitude = LongitudeClass.FromString(longitude);
-            int result = new int();
-            if (!int.TryParse(transitFees,out result))
-            {
-                throw (new Exception("中转费非法"));
-            }
-            this.transitFees = result;
-            this.neighborList = new List<Edge>();
-            this.tags = new List<string>();
-        }
-
-        public void AddEdge(City end, int edge)
-        {
-            Edge e = new Edge(this, end, edge);
-            if (!neighborList.Contains(e))
-            {
-                this.neighborList.Add(e);
-            }
-        }
-
-        public void RemoveEdge(City end)
-        {
-            this.neighborList.RemoveAll(delegate(Edge a)
-            {
-                return (a.End == end);
-            });
-        }
-
-        public Edge GetEdge(City end)
-        {
-            return (this.neighborList.Find(delegate(Edge a)
-            {
-                return (a.End == end);
-            }));
-        }
-
-        public bool Equals(City other)
-        {
-            return (this.Name == other.Name);
-        }
-
-        public void AddTag(string tag)
-        {
-            if (tagList.Contains(tag))
-            {
-                tags.Add(tag);
-            }
-        }
-
-        public void RemoveTag(string tag)
-        {
-            tags.Remove(tag);
-        }
-
-        public bool HasTag(string tag)
-        {
-            return tags.Contains(tag);
-        }
-        public void ClearTag()
-        {
-            tags.Clear();
-        }
-
-        #endregion
-        public double GetCenterX()
-        {
-            return longitude;
-        }
-
-        public double GetCenterY()
-        {
-            return latitude;
-        }
-
-        #region 静态方法和成员
-        public static double GetXmin()
-        {
-            return longitudeMin;
-        }
-
-        public static double GetXmax()
-        {
-            return longitudeMax;
-        }
-
-        public static double GetYmin()
-        {
-            return latitudeMin;
-        }
-
-        public static double GetYmax()
-        {
-            return latitudeMax;
-        }
-
-        public static double longitudeMin = Double.PositiveInfinity;
-        public static double longitudeMax = Double.NegativeInfinity;
-        public static double latitudeMin = Double.PositiveInfinity;
-        public static double latitudeMax = Double.NegativeInfinity;
-        public static List<string> tagList = new List<string>();
-        public static void AddTagType(string tag)
-        {
-            if (!tagList.Contains(tag))
-            {
-                tagList.Add(tag);
-            }
-        }
-        #endregion
-    }
 }

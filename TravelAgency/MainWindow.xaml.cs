@@ -20,8 +20,8 @@ namespace TravelAgency
 {
     public partial class MainWindow : Window
     {
-        AdjacencyGraph map = new AdjacencyGraph();
-        Visualization visual;
+        private AdjacencyGraph map = new AdjacencyGraph();
+        private Visualization visual;
 
         public MainWindow()
         {
@@ -76,6 +76,10 @@ namespace TravelAgency
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        private void ZoomControl_MouseDown(object sender, MouseButtonEventArgs e)
+        {
         }
     }
 }

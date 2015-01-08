@@ -53,10 +53,11 @@ namespace TravelAgency
                 BinaryFormatter binFormat = new BinaryFormatter();
                 binFormat.Serialize(fStream, map.VertexList);
                 binFormat.Serialize(fStream, City.tagList);
+                binFormat.Serialize(fStream, City.tagDictionary);
                 fStream.Close();
             }
         }
-        private static void ImportFormBinMap(string path, AdjacencyGraph map)
+        public static void ImportFormBinMap(string path, AdjacencyGraph map)
         {
             map.Clear();
             Stream fStream = new FileStream(path, FileMode.Open, FileAccess.Read);
@@ -64,6 +65,7 @@ namespace TravelAgency
             fStream.Position = 0;
             map.VertexList = (List<City>)binFormat.Deserialize(fStream);
             City.tagList = (List<string>)binFormat.Deserialize(fStream);
+            City.tagDictionary = (Dictionary<string,int>)binFormat.Deserialize(fStream);
             fStream.Close();
             map.Dictionary.Clear();
             foreach (City c in map.VertexList)
@@ -125,6 +127,78 @@ namespace TravelAgency
             }
             app.Quit();
             System.Windows.Forms.MessageBox.Show("导入成功！");
+        }
+
+        public static void ExportPathData(string path, List<Path> pathData)
+        {
+            FileInfo fileInfo = new FileInfo(path);
+            var directory = fileInfo.Directory;
+            if (!directory.Exists)
+            {
+                directory.Create();
+            }
+            int i = 0;
+            do
+            {
+                i++;
+                fileInfo = new FileInfo(path + i.ToString() + ".path");
+            } while (fileInfo.Exists);
+            FileStream fStream = new FileStream(path + i.ToString() + ".path", FileMode.Create, FileAccess.Write);
+            StreamWriter writer = new StreamWriter(fStream);
+            writer.Write(pathData);
+            foreach (Path p in pathData)
+            {
+                foreach (String name in p.Name)
+                {
+                    writer.Write(name + " ");
+                }
+                writer.Write("|");
+                foreach (bool tag in p.Tag)
+                {
+                    writer.Write(tag ? 1 : 0);
+                    writer.Write(" ");
+                }
+                writer.Write("|");
+                writer.Write(p.Transit);
+                writer.Write("|");
+                writer.Write(p.CityCount);
+                writer.Write("\n");
+            }
+            writer.Flush();
+            fStream.Flush();
+            fStream.Close();
+        }
+
+        public static List<Path> ImportPathData(StreamReader reader, int size)
+        {
+            List<Path> pathList = new List<Path>(size);
+            for (int i = 0; i < size; i++)
+            {
+                string s = reader.ReadLine();
+                string[] part = s.Split('|');
+                string[] tags = part[1].Split(' ');
+                Path p = new Path();
+                for (int j = 0; j < tags.Count() - 1; j++)
+                {
+                    p.Tag[j] = tags[j] == "1" ? true : false;
+                }
+                foreach (string name in part[0].Split(' '))
+                {
+                    if (name == "")
+                    {
+                        break;
+                    }
+                    p.Name.Add(name);
+                }
+                p.Transit = Convert.ToInt32(part[2]);
+                p.CityCount = Convert.ToInt32(part[3]);
+                pathList.Add(p);
+                if (reader.EndOfStream)
+                {
+                    break;
+                }
+            }
+            return pathList;
         }
     }
 }

@@ -69,8 +69,14 @@ namespace TravelAgency
 
         public void AddEdge(City start, City end, int edge)
         {
-            start.AddEdge(end, edge);
-            end.AddEdge(start, edge);
+            if (start.GetEdge(end)==null)
+            {
+                start.AddEdge(end, edge);
+            }
+            if (end.GetEdge(start)==null)
+            {
+                end.AddEdge(start, edge);
+            }
         }
 
         public void AddEdge(int start, int end, int edge)

@@ -79,6 +79,8 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AdjacencyGraphTest.cs" />
+    <Compile Include="AgencyTest.cs" />
+    <Compile Include="FileIOTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

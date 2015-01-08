@@ -18,7 +18,6 @@ using System.Windows.Shapes;
 namespace TravelAgency
 {
     public delegate void OnVertexClickedEventHandler (City e);
-    public delegate void OnVertexEditEventHandler (City e);
 
     public class Visualization
     {
@@ -71,44 +70,33 @@ namespace TravelAgency
             map.Floyd();
         }
 
-        public Ellipse DrawVertex(City vertex)
+        public Point GetGeoLocaltion(Point canvaPos)
         {
-            Ellipse ellipse = new Ellipse();
-            ellipse.Fill = Brushes.Yellow;
-            ellipse.StrokeThickness = 2;
-            ellipse.Stroke = Brushes.Black;
-            ellipse.Height = 0.6 * scale;
-            ellipse.Width = 0.6 * scale;
-            Canvas.SetZIndex(ellipse, 2);
-            Canvas.SetLeft(ellipse, (vertex.GetCenterX() - Xoffset) * scale - ellipse.Width / 2);
-            Canvas.SetBottom(ellipse, (vertex.GetCenterY() - Yoffset) * scale - ellipse.Height / 2);
-            canva.Children.Add(ellipse);
-            ellipse.MouseDown += ellipse_MouseDown;
-            ContextMenu contextMenu = new ContextMenu();
-            MenuItem editCity = new MenuItem { Header = "编辑城市" };
-            editCity.Click += editCity_Click;
-            contextMenu.Items.Add(editCity);
-            MenuItem deleteCity = new MenuItem { Header = "删除城市" };
-            deleteCity.Click += deleteCity_Click;
-            contextMenu.Items.Add(deleteCity);
-            ellipse.ContextMenu = contextMenu;
-            ellipse.IsMouseDirectlyOverChanged += ellipse_IsMouseDirectlyOverChanged;
-            return ellipse;
+            return new Point(canvaPos.X/scale+Xoffset,(canva.Height-canvaPos.Y)/scale+Yoffset);
         }
 
-        void deleteCity_Click(object sender, RoutedEventArgs e)
+        void ellipse_IsMouseDirectlyOverChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            Ellipse ellipse = ContextMenuService.GetPlacementTarget(LogicalTreeHelper.GetParent(sender as MenuItem)) as Ellipse;
+            Ellipse ellipse = sender as Ellipse;
             City city;
             dictionary.TryGetValue(ellipse, out city);
-            try
+            if (ellipse.IsMouseDirectlyOver)
             {
-                map.RemoveVertex(city);
-                DrawGraph(map);
+                HighLightVertexAndShortEdge(city, true);
+            } 
+            else
+            {
+                HighLightVertexAndShortEdge(city, false);
             }
-            catch (System.Exception)
+        }
+
+        void ellipse_MouseDown(object sender, MouseEventArgs e)
+        {
+            City city;
+            dictionary.TryGetValue(sender as Ellipse, out city);
+            if (city != null)
             {
-                MessageBox.Show("无法删除");
+                OnVertexClickedEvent(city);
             }
         }
 
@@ -133,7 +121,48 @@ namespace TravelAgency
             }
         }
 
-        public Line DrawEdge(Edge edge)
+        void deleteCity_Click(object sender, RoutedEventArgs e)
+        {
+            Ellipse ellipse = ContextMenuService.GetPlacementTarget(LogicalTreeHelper.GetParent(sender as MenuItem)) as Ellipse;
+            City city;
+            dictionary.TryGetValue(ellipse, out city);
+            try
+            {
+                map.RemoveVertex(city);
+                DrawGraph(map);
+            }
+            catch (System.Exception)
+            {
+                MessageBox.Show("无法删除");
+            }
+        }
+
+        private Ellipse DrawVertex(City vertex)
+        {
+            Ellipse ellipse = new Ellipse();
+            ellipse.Fill = Brushes.Yellow;
+            ellipse.StrokeThickness = 2;
+            ellipse.Stroke = Brushes.Black;
+            ellipse.Height = 0.6 * scale;
+            ellipse.Width = 0.6 * scale;
+            Canvas.SetZIndex(ellipse, 2);
+            Canvas.SetLeft(ellipse, (vertex.GetCenterX() - Xoffset) * scale - ellipse.Width / 2);
+            Canvas.SetBottom(ellipse, (vertex.GetCenterY() - Yoffset) * scale - ellipse.Height / 2);
+            canva.Children.Add(ellipse);
+            ellipse.MouseDown += ellipse_MouseDown;
+            ContextMenu contextMenu = new ContextMenu();
+            MenuItem editCity = new MenuItem { Header = "编辑城市" };
+            editCity.Click += editCity_Click;
+            contextMenu.Items.Add(editCity);
+            MenuItem deleteCity = new MenuItem { Header = "删除城市" };
+            deleteCity.Click += deleteCity_Click;
+            contextMenu.Items.Add(deleteCity);
+            ellipse.ContextMenu = contextMenu;
+            ellipse.IsMouseDirectlyOverChanged += ellipse_IsMouseDirectlyOverChanged;
+            return ellipse;
+        }
+
+        private Line DrawEdge(Edge edge)
         {
             Line line = new Line();
             line.StrokeThickness = 0.5;
@@ -147,81 +176,57 @@ namespace TravelAgency
             this.canva.Children.Add(line);
             return line;
         }
-        void ellipse_IsMouseDirectlyOverChanged(object sender, DependencyPropertyChangedEventArgs e)
+
+        private void HighLightVertexAndShortEdge(City city,bool isHighLight)
         {
-            Ellipse ellipse = sender as Ellipse;
-            City city;
-            dictionary.TryGetValue(ellipse, out city);
-            if (ellipse.IsMouseDirectlyOver)
+            if (isHighLight)
             {
-                ellipse.Fill = Brushes.YellowGreen;
-                if (city != null)
+                city.ellipse.Fill = Brushes.YellowGreen;
+                foreach (City end in map.VertexList)
                 {
-                    foreach (City end in map.VertexList)
+                    List<Edge> result = map.ShortestPath(city, end);
+                    if (result == null)
                     {
-                        List<Edge> result = map.ShortestPath(city, end);
-                        if (result == null)
+                        return;
+                    }
+                    for (int i = 0; i < result.Count; i++)
+                    {
+                        if (i == 0)
                         {
-                            return;
+                            Canvas.SetZIndex(result[i].line, 1);
+                            result[i].line.StrokeThickness = 3;
+                            result[i].line.Stroke = System.Windows.Media.Brushes.DarkBlue;
                         }
-                        for (int i =0 ;i<result.Count;i++)
+                        else
                         {
-                            if (i == 0)
-                            {
-                                Canvas.SetZIndex(result[i].line, 1);
-                                result[i].line.StrokeThickness = 3;
-                                result[i].line.Stroke = System.Windows.Media.Brushes.DarkBlue;
-                            }
-                            else
-                            {
-                                Canvas.SetZIndex(result[i].line, 1);
-                                result[i].line.StrokeThickness = 3;
-                                result[i].line.Stroke = System.Windows.Media.Brushes.OrangeRed;
-                            }
+                            Canvas.SetZIndex(result[i].line, 1);
+                            result[i].line.StrokeThickness = 3;
+                            result[i].line.Stroke = System.Windows.Media.Brushes.OrangeRed;
                         }
                     }
                 }
             }
             else
             {
-                ellipse.Fill = Brushes.Yellow;
-                if (city != null)
+                city.ellipse.Fill = Brushes.Yellow;
+                foreach (City end in map.VertexList)
                 {
-                    foreach (City end in map.VertexList)
+                    List<Edge> result = map.ShortestPath(city, end);
+                    if (result == null)
                     {
-                        List<Edge> result = map.ShortestPath(city, end);
-                        if (result == null)
+                        return;
+                    }
+                    foreach (Edge edge in result)
+                    {
+                        if (edge != null)
                         {
-                            return;
-                        }
-                        foreach (Edge edge in result)
-                        {
-                            if (edge != null)
-                            {
-                                Canvas.SetZIndex(edge.line, 0);
-                                edge.line.StrokeThickness = 0.5;
-                                edge.line.Stroke = System.Windows.Media.Brushes.LightSteelBlue;
-                            }
-                            
+                            Canvas.SetZIndex(edge.line, 0);
+                            edge.line.StrokeThickness = 0.5;
+                            edge.line.Stroke = System.Windows.Media.Brushes.LightSteelBlue;
                         }
                     }
                 }
             }
-        }
-
-        void ellipse_MouseDown(object sender, MouseEventArgs e)
-        {
-            City city;
-            dictionary.TryGetValue(sender as Ellipse, out city);
-            if (city != null)
-            {
-                OnVertexClickedEvent(city);
-            }
-        }
-
-        public Point GetGeoLocaltion(Point canvaPos)
-        {
-            return new Point(canvaPos.X/scale+Xoffset,(canva.Height-canvaPos.Y)/scale+Yoffset);
         }
     }
 }
