@@ -13,9 +13,9 @@ namespace TravelAgency
     public class AdjacencyGraph
     {
         private List<City> vertexList;
-        private Dictionary<string, City> dictionary;
+        private Dictionary<City, int> dictionary;
 
-        public Dictionary<string, City> Dictionary
+        public Dictionary<City, int> Dictionary
         {
             get { return dictionary; }
             set { dictionary = value; }
@@ -38,7 +38,7 @@ namespace TravelAgency
         public AdjacencyGraph()
         {
             this.vertexList = new List<City>();
-            this.dictionary = new Dictionary<string, City>();
+            this.dictionary = new Dictionary<City, int>();
         }
 
         public void AddVertex(City vertex)
@@ -46,7 +46,7 @@ namespace TravelAgency
             if (!VertexList.Contains(vertex))
             {
                 this.vertexList.Add(vertex);
-                dictionary.Add(vertex.Name, vertex);
+                dictionary.Add(vertex, VertexList.Count - 1);
             }
         }
 
@@ -57,14 +57,6 @@ namespace TravelAgency
                 edge.End.RemoveEdge(vertex);
             }
             this.VertexList.Remove(vertex);
-            dictionary.Remove(vertex.Name);
-        }
-
-        public void RemoveVertex(string vertex)
-        {
-            City city;
-            dictionary.TryGetValue(vertex, out city);
-            RemoveVertex(city);
         }
 
         public void AddEdge(City start, City end, int edge)
@@ -85,15 +77,6 @@ namespace TravelAgency
             cstart = vertexList[start];
             cend = vertexList[end];
             AddEdge(cstart, cend, edge);
-        }
-
-        public void AddEdge(string start, string end, int edge)
-        {
-            City cstart, cend;
-            dictionary.TryGetValue(start,out cstart);
-            dictionary.TryGetValue(end, out cend);
-            AddEdge(cstart, cend, edge);
-            AddEdge(cend, cstart, edge);
         }
 
         public void RemoveEdge(City start, City end)
@@ -123,6 +106,13 @@ namespace TravelAgency
         public void Clear()
         {
             this.VertexList.Clear();
+        }
+
+        public int GetCityIndex(City city)
+        {
+            int index;
+            dictionary.TryGetValue(city, out index);
+            return index;
         }
 
         private void UpdataAdjacencyMartix()
@@ -193,13 +183,6 @@ namespace TravelAgency
                 result.Add(edge);
                 start = edge.End;
             }
-            return result;
-        }
-
-        public City FindCityByName(string name)
-        {
-            City result;
-            dictionary.TryGetValue(name, out result);
             return result;
         }
 

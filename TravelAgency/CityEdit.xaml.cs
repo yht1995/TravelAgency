@@ -65,7 +65,10 @@ namespace TravelAgency
         {
             if (this.cityList.SelectedValue != null)
             {
-                City end = map.FindCityByName(this.cityList.SelectedValue.ToString());
+                City end = map.VertexList.Find(delegate(City c)
+                {
+                    return c.Name == cityList.SelectedValue.ToString();
+                });
                 edgeList.Add(new Edge(city, end, 0));
                 cityList.Items.Remove(cityList.SelectedItem);
             }

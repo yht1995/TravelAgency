@@ -11,12 +11,10 @@ using System.Collections.Concurrent;
 
 namespace TravelAgency
 {
-
-    [Serializable]
     public class Path
     {
-        public List<String> Name;
-        public bool[] Tag;
+        public List<int> NameIndex;
+        public List<int> Tag;
         public int Transit;
         private int cityCount;
         public double Lvaule;
@@ -29,36 +27,36 @@ namespace TravelAgency
 
         public Path()
         {
-            Name = new List<String>();
-            Tag = new bool[tagCount];
+            NameIndex = new List<int>();
+            Tag = new List<int>();
             Transit = 0;
             cityCount = 0;
         }
 
-        public void AddCity(City city)
+        public void AddCity(City city,int cityIndex)
         {
-            if (!Name.Contains(city.Name))
+            if (!NameIndex.Contains(cityIndex))
             {
                 cityCount++;
             }
-            Name.Add(city.Name);
+            NameIndex.Add(cityIndex);
             foreach(String tag in city.Tags)
             {
                 int index;
                 City.tagDictionary.TryGetValue(tag, out index);
-                Tag[index] = true;
+                if (!Tag.Contains(index))
+                {
+                    Tag.Add(index);
+                }
             }
         }
 
         public int CalcIValue(int[] rate)
         {
             int a = 0;
-            for (int i = 0; i < tagCount; i++)
+            foreach(int tag in Tag)
             {
-                if (Tag[i])
-                {
-                    a += rate[i];
-                }
+                a += rate[tag];
             }
             return a;
         }
@@ -66,12 +64,11 @@ namespace TravelAgency
 
     public class Agency
     {
-        private const string filePath = "E:\\Data\\";
-        private double alaph = 3;
-        private double beta = 1;
-        private double eta = 5;
+        private const string filePath = "E:\\Data";
+        private float alaph = 3;
+        private float beta = 1;
+        private float eta = 5;
         private const int bufSize = 500000;
-        private int bufCount;
 
         private class searchNode
         {
@@ -83,20 +80,13 @@ namespace TravelAgency
 
         public void PrepareData(AdjacencyGraph map)
         {
-            //Parallel.ForEach(map.VertexList, (city) =>
-            //{
-            //    List<Path> pathData = new List<Path>();
-            //    for (int i = 1; i <= 3; i++)
-            //    {
-            //        pathData.AddRange(EnumeratePath(map, city, i));
-            //    }
-            //    FileIO.ExportPathData(filePath + "\\" + city.Name + ".path", pathData);
-            //});
-            for (int i = 1; i <= 6; i++)
+            Parallel.ForEach(map.VertexList, (city) =>
             {
-                EnumeratePath(map, map.VertexList[0], i);
-            }
-            
+                for (int i = 1; i <= 5; i++)
+                {
+                    EnumeratePath(map, city, i);
+                }
+            });
         }
 
         public void EnumeratePath(AdjacencyGraph map,City start,int count)
@@ -107,7 +97,7 @@ namespace TravelAgency
             node.parent = null;
             node.self = start;
             node.depth = 0;
-            bufCount = 0;
+            int bufCount = 0;
             s.Push(node);
             while (s.Count != 0)
             {
@@ -118,7 +108,7 @@ namespace TravelAgency
                     Path p = new Path();
                     while (n != null)
                     {
-                        p.AddCity(n.self);
+                        p.AddCity(n.self,map.GetCityIndex(n.self));
                         p.Transit += (n.cost + n.self.TransitFees);
                         n = n.parent;
                     }
@@ -153,15 +143,15 @@ namespace TravelAgency
                 }
                 if (bufCount>=bufSize)
                 {
-                    FileIO.ExportPathData(filePath + "\\" + start.Name + "\\", result);
+                    FileIO.ExportPathData(filePath + "\\" + start.Name + "\\", result,count);
                     result.Clear();
                     bufCount = 0;
                 }
             }
-            FileIO.ExportPathData(filePath + "\\" + start.Name + "\\", result);
+            FileIO.ExportPathData(filePath + "\\" + start.Name + "\\", result,count);
         }
 
-        public Path BestPath(City city, int[] rate, int cityCount, int transitFee)
+        public Path BestPath(City city, int[] rate, int targetCityCount, int targetTransitFee)
         {
             FileInfo fileInfo;
             int i = 0;
@@ -170,32 +160,44 @@ namespace TravelAgency
                 i++;
                 fileInfo = new FileInfo(filePath + "\\" + city.Name + "\\" + i.ToString() + ".path");
             } while (fileInfo.Exists);
-            double tagSum = 0;
+            int tagSum = 0;
             foreach (int tag in rate)
             {
                 tagSum += tag;
             }
             BlockingCollection<Path> betterList = new BlockingCollection<Path>();
-            for (int tim = 0 ;tim * 4<i;tim++)
+            for (int tim = 0 ;tim * 8 < i;tim++)
             {
-                int end = 4 + 4 * tim < i ? 4 + 4 * tim : i;
-                Parallel.For(1 + 4* tim,end , (index) =>
+                int end = 8 + 8 * tim < i ? 8 + 8 * tim : i;
+                Parallel.For(1 + 8 * tim,end , (index) =>
                 {
-                    Stream fStream = new FileStream(filePath + "\\" + city.Name + "\\" + index.ToString() + ".path", FileMode.Open, FileAccess.Read);
-                    fStream.Position = 0;
-                    StreamReader reader = new StreamReader(fStream);
-                    while (!reader.EndOfStream)
+                    string path = filePath + "\\" + city.Name + "\\" + index.ToString() + ".path";
+                    List<Path> pathList = FileIO.ImportPathData(path);
+                    //for (int k = 0; k * 100 < pathList.Count; k++)
+                    //{
+                    //    int e = 100 + 100 * k < pathList.Count ? 100 + 100 * k : pathList.Count;
+                    //    uint size = Convert.ToUInt32(e - 100 * k + 1);
+                    //    float[] result = new float[size];
+                    //    int[] tag = new int[size];
+                    //    int[] realCityCount = new int[size];
+                    //    int[] realTransit = new int[size];
+                    //    for (int j = 100 * k; j < e; j++)
+                    //    {
+                    //        tag[j - 100 * k] = pathList[j].CalcIValue(rate);
+                    //        realCityCount[j - 100 * k] = pathList[j].CityCount;
+                    //        realTransit[j - 100 * k] = pathList[j].Transit;
+                    //    }
+                    //    int max_i = new int();
+                    //    max_i = addWithCuda(result,alaph, tag, tagSum, beta, realCityCount, targetCityCount, eta, realTransit, targetTransitFee, size);
+                    //    betterList.Add(pathList[max_i + 100 * k]);
+                    //}
+                    Parallel.ForEach(pathList, p =>
                     {
-                        List<Path> pathList = FileIO.ImportPathData(reader, bufSize);
-                        Parallel.ForEach(pathList, p =>
-                        {
-                            p.Lvaule = alaph * p.CalcIValue(rate) / tagSum
-                                + beta * CalcSValue(p, cityCount)
-                                + eta * CalcTValue(p, transitFee);
-                        });
-                        betterList.Add(MaxLValuePath(pathList));
-                    }
-                    fStream.Close();
+                        p.Lvaule = alaph * p.CalcIValue(rate) / tagSum
+                            + beta * CalcSValue(p, targetCityCount)
+                            + eta * CalcTValue(p, targetTransitFee);
+                    });
+                    betterList.Add(MaxLValuePath(pathList));
                 });
             }
             return MaxLValuePath(betterList);
@@ -231,14 +233,14 @@ namespace TravelAgency
             return bestPath;
         }
 
-        private double CalcSValue(Path real,int target)
+        private float CalcSValue(Path real,int target)
         {
-            return -(Convert.ToDouble(Math.Abs(real.CityCount - target)) / target);
+            return -((Math.Abs(real.CityCount - target)) / target);
         }
 
-        private double CalcTValue(Path real, int target)
+        private float CalcTValue(Path real, int target)
         {
-            double T = (target - Convert.ToDouble(real.Transit)) / target;
+            float T = (target - real.Transit) / target;
             if (target >= real.Transit)
             {
                 return T;
@@ -248,5 +250,18 @@ namespace TravelAgency
                 return 3 * T;
             }
         }
+
+        [DllImport("CudaTest.dll")]
+        private static extern int addWithCuda(float[] result,float alaph, 
+                                              int[] tag,
+                                              int tagsum,
+                                              float beta,
+                                              int[] realCityCount,
+                                              int targetCityCount,
+                                              float eta,
+                                              int[] realTransit,
+                                              int targetTransit,
+                                              uint size);
+
     }
 }

@@ -52,6 +52,7 @@ namespace TravelAgency
                 Stream fStream = new FileStream(filename, FileMode.Create, FileAccess.ReadWrite);
                 BinaryFormatter binFormat = new BinaryFormatter();
                 binFormat.Serialize(fStream, map.VertexList);
+                binFormat.Serialize(fStream, map.Dictionary);
                 binFormat.Serialize(fStream, City.tagList);
                 binFormat.Serialize(fStream, City.tagDictionary);
                 fStream.Close();
@@ -64,15 +65,12 @@ namespace TravelAgency
             BinaryFormatter binFormat = new BinaryFormatter();
             fStream.Position = 0;
             map.VertexList = (List<City>)binFormat.Deserialize(fStream);
+            map.Dictionary = (Dictionary<City, int>)binFormat.Deserialize(fStream);
             City.tagList = (List<string>)binFormat.Deserialize(fStream);
             City.tagDictionary = (Dictionary<string,int>)binFormat.Deserialize(fStream);
             fStream.Close();
-            map.Dictionary.Clear();
-            foreach (City c in map.VertexList)
-            {
-                map.Dictionary.Add(c.Name, c);
-            }
         }
+
         private static void ImportFormExcel(string path,AdjacencyGraph map)
         {
             map.Clear();
@@ -116,7 +114,10 @@ namespace TravelAgency
             mapSheet = workbook.Sheets[2];
             while (mapSheet.Cells[i, 1].Value2 != null)
             {
-                City city = map.FindCityByName(mapSheet.Cells[i, 1].Value2);
+                City city = map.VertexList.Find(delegate(City c)
+                {
+                    return c.Name == mapSheet.Cells[i, 1].Value2;
+                });
                 int j = 1;
                 while (mapSheet.Cells[i, j + 1].Value2 != null)
                 {
@@ -129,7 +130,7 @@ namespace TravelAgency
             System.Windows.Forms.MessageBox.Show("导入成功！");
         }
 
-        public static void ExportPathData(string path, List<Path> pathData)
+        public static void ExportPathData(string path, List<Path> pathData,int depth)
         {
             FileInfo fileInfo = new FileInfo(path);
             var directory = fileInfo.Directory;
@@ -143,61 +144,59 @@ namespace TravelAgency
                 i++;
                 fileInfo = new FileInfo(path + i.ToString() + ".path");
             } while (fileInfo.Exists);
-            FileStream fStream = new FileStream(path + i.ToString() + ".path", FileMode.Create, FileAccess.Write);
+            FileStream fStream = new FileStream(path + "0.path", FileMode.Append, FileAccess.Write);
             StreamWriter writer = new StreamWriter(fStream);
-            writer.Write(pathData);
+            writer.WriteLine(depth.ToString() + " " + i.ToString() + " " + pathData.Count.ToString());
+            writer.Flush();
+            fStream.Flush();
+            fStream.Close();
+            fStream = new FileStream(path + i.ToString() + ".path", FileMode.Create, FileAccess.Write);
+            BinaryWriter bitWriter = new BinaryWriter(fStream,Encoding.Default);
+            bitWriter.Write(pathData.Count);
             foreach (Path p in pathData)
             {
-                foreach (String name in p.Name)
+                bitWriter.Write(p.NameIndex.Count);
+                foreach (int name in p.NameIndex)
                 {
-                    writer.Write(name + " ");
+                    bitWriter.Write(name);
                 }
-                writer.Write("|");
-                foreach (bool tag in p.Tag)
+                bitWriter.Write(p.Tag.Count);
+                foreach (int tag in p.Tag)
                 {
-                    writer.Write(tag ? 1 : 0);
-                    writer.Write(" ");
+                    bitWriter.Write(tag);
                 }
-                writer.Write("|");
-                writer.Write(p.Transit);
-                writer.Write("|");
-                writer.Write(p.CityCount);
-                writer.Write("\n");
+                bitWriter.Write(p.Transit);
+                bitWriter.Write(p.CityCount);
             }
-            writer.Flush();
+            bitWriter.Flush();
             fStream.Flush();
             fStream.Close();
         }
 
-        public static List<Path> ImportPathData(StreamReader reader, int size)
+        public static List<Path> ImportPathData(string path)
         {
-            List<Path> pathList = new List<Path>(size);
+            Stream fStream = new FileStream(path, FileMode.Open, FileAccess.Read);
+            BinaryReader reader = new BinaryReader(fStream,Encoding.Default);
+            int size = reader.ReadInt32();
+            List<Path> pathList = new List<Path>();
             for (int i = 0; i < size; i++)
             {
-                string s = reader.ReadLine();
-                string[] part = s.Split('|');
-                string[] tags = part[1].Split(' ');
                 Path p = new Path();
-                for (int j = 0; j < tags.Count() - 1; j++)
+                int nameCount = reader.ReadInt32();
+                for (int j = 0; j < nameCount; j++)
                 {
-                    p.Tag[j] = tags[j] == "1" ? true : false;
+                    p.NameIndex.Add(reader.ReadInt32());
                 }
-                foreach (string name in part[0].Split(' '))
+                int tagCount = reader.ReadInt32();
+                for (int j = 0; j < tagCount; j++)
                 {
-                    if (name == "")
-                    {
-                        break;
-                    }
-                    p.Name.Add(name);
+                    p.Tag.Add(reader.ReadInt32());
                 }
-                p.Transit = Convert.ToInt32(part[2]);
-                p.CityCount = Convert.ToInt32(part[3]);
+                p.Transit = reader.ReadInt32();
+                p.CityCount = reader.ReadInt32();
                 pathList.Add(p);
-                if (reader.EndOfStream)
-                {
-                    break;
-                }
             }
+            fStream.Close();
             return pathList;
         }
     }
