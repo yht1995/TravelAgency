@@ -78,12 +78,13 @@ namespace UnitTest
             City start = map.VertexList[0]; // TODO: 初始化为适当的值
             int count = 3; // TODO: 初始化为适当的值
             target.EnumeratePath(map, start, count);
+            Assert.Inconclusive("无法验证不返回值的方法。");
         }
 
         /// <summary>
         ///PrepareData 的测试
         ///</summary>
-        [TestMethod()]
+        //[TestMethod()]
         public void PrepareDataTest()
         {
             string path = "D:\\document\\大二上\\数据结构\\第四次大作业\\map.map"; // TODO: 初始化为适当的值
@@ -104,7 +105,7 @@ namespace UnitTest
             AdjacencyGraph map = new AdjacencyGraph();
             FileIO.ImportFormBinMap(path, map);
             Agency target = new Agency(); // TODO: 初始化为适当的值
-            City city = map.VertexList[0]; // TODO: 初始化为适当的值
+            City city = map.VertexList[20]; // TODO: 初始化为适当的值
             int[] rate = new int[30] {0,0,1,0,0,0,0,0,0,0,
                                     0,0,0,0,2,0,0,0,0,0,
                                     0,0,0,0,4,0,0,0,0,0}; // TODO: 初始化为适当的值

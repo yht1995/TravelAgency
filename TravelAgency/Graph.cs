@@ -13,9 +13,9 @@ namespace TravelAgency
     public class AdjacencyGraph
     {
         private List<City> vertexList;
-        private Dictionary<City, int> dictionary;
+        private Dictionary<string, int> dictionary;
 
-        public Dictionary<City, int> Dictionary
+        public Dictionary<string, int> Dictionary
         {
             get { return dictionary; }
             set { dictionary = value; }
@@ -38,15 +38,15 @@ namespace TravelAgency
         public AdjacencyGraph()
         {
             this.vertexList = new List<City>();
-            this.dictionary = new Dictionary<City, int>();
+            this.dictionary = new Dictionary<string, int>();
         }
 
         public void AddVertex(City vertex)
         {
             if (!VertexList.Contains(vertex))
             {
-                this.vertexList.Add(vertex);
-                dictionary.Add(vertex, VertexList.Count - 1);
+                VertexList.Add(vertex);
+                dictionary.Add(vertex.Name, VertexList.Count - 1);
             }
         }
 
@@ -92,7 +92,7 @@ namespace TravelAgency
                 int edge = start.GetEdge(end).Value;
                 return edge;
             }
-            catch (System.Exception )
+            catch (System.Exception)
             {
                 return -1;
             }
@@ -110,9 +110,7 @@ namespace TravelAgency
 
         public int GetCityIndex(City city)
         {
-            int index;
-            dictionary.TryGetValue(city, out index);
-            return index;
+            return dictionary[city.Name];
         }
 
         private void UpdataAdjacencyMartix()

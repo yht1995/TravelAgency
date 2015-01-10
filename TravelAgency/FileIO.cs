@@ -65,7 +65,7 @@ namespace TravelAgency
             BinaryFormatter binFormat = new BinaryFormatter();
             fStream.Position = 0;
             map.VertexList = (List<City>)binFormat.Deserialize(fStream);
-            map.Dictionary = (Dictionary<City, int>)binFormat.Deserialize(fStream);
+            map.Dictionary = (Dictionary<string, int>)binFormat.Deserialize(fStream);
             City.tagList = (List<string>)binFormat.Deserialize(fStream);
             City.tagDictionary = (Dictionary<string,int>)binFormat.Deserialize(fStream);
             fStream.Close();
@@ -130,7 +130,7 @@ namespace TravelAgency
             System.Windows.Forms.MessageBox.Show("导入成功！");
         }
 
-        public static void ExportPathData(string path, List<Path> pathData,int depth)
+        public static void ExportPathData(string path,List<Path> pathData,int depth)
         {
             FileInfo fileInfo = new FileInfo(path);
             var directory = fileInfo.Directory;

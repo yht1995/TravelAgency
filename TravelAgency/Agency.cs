@@ -17,7 +17,7 @@ namespace TravelAgency
         public List<int> Tag;
         public int Transit;
         private int cityCount;
-        public double Lvaule;
+        public float Lvaule;
         private static int tagCount = City.tagList.Count;
         public int CityCount
         {
@@ -80,13 +80,13 @@ namespace TravelAgency
 
         public void PrepareData(AdjacencyGraph map)
         {
-            Parallel.ForEach(map.VertexList, (city) =>
+            foreach (City city in map.VertexList)
             {
                 for (int i = 1; i <= 5; i++)
                 {
                     EnumeratePath(map, city, i);
                 }
-            });
+            }
         }
 
         public void EnumeratePath(AdjacencyGraph map,City start,int count)
@@ -104,9 +104,9 @@ namespace TravelAgency
                 searchNode top = s.Pop();
                 if (top.self == start && top.parent != null)
                 {
-                    searchNode n = top;
+                    searchNode n = top.parent;
                     Path p = new Path();
-                    while (n != null)
+                    while (n.parent != null)
                     {
                         p.AddCity(n.self,map.GetCityIndex(n.self));
                         p.Transit += (n.cost + n.self.TransitFees);
@@ -143,12 +143,12 @@ namespace TravelAgency
                 }
                 if (bufCount>=bufSize)
                 {
-                    FileIO.ExportPathData(filePath + "\\" + start.Name + "\\", result,count);
+                    FileIO.ExportPathData(filePath + "\\" + start.Name + "\\",result,count);
                     result.Clear();
                     bufCount = 0;
                 }
             }
-            FileIO.ExportPathData(filePath + "\\" + start.Name + "\\", result,count);
+            FileIO.ExportPathData(filePath + "\\" + start.Name + "\\",result,count);
         }
 
         public Path BestPath(City city, int[] rate, int targetCityCount, int targetTransitFee)
@@ -173,24 +173,6 @@ namespace TravelAgency
                 {
                     string path = filePath + "\\" + city.Name + "\\" + index.ToString() + ".path";
                     List<Path> pathList = FileIO.ImportPathData(path);
-                    //for (int k = 0; k * 100 < pathList.Count; k++)
-                    //{
-                    //    int e = 100 + 100 * k < pathList.Count ? 100 + 100 * k : pathList.Count;
-                    //    uint size = Convert.ToUInt32(e - 100 * k + 1);
-                    //    float[] result = new float[size];
-                    //    int[] tag = new int[size];
-                    //    int[] realCityCount = new int[size];
-                    //    int[] realTransit = new int[size];
-                    //    for (int j = 100 * k; j < e; j++)
-                    //    {
-                    //        tag[j - 100 * k] = pathList[j].CalcIValue(rate);
-                    //        realCityCount[j - 100 * k] = pathList[j].CityCount;
-                    //        realTransit[j - 100 * k] = pathList[j].Transit;
-                    //    }
-                    //    int max_i = new int();
-                    //    max_i = addWithCuda(result,alaph, tag, tagSum, beta, realCityCount, targetCityCount, eta, realTransit, targetTransitFee, size);
-                    //    betterList.Add(pathList[max_i + 100 * k]);
-                    //}
                     Parallel.ForEach(pathList, p =>
                     {
                         p.Lvaule = alaph * p.CalcIValue(rate) / tagSum
@@ -206,7 +188,7 @@ namespace TravelAgency
         private Path MaxLValuePath(BlockingCollection<Path> pathList)
         {
             Path bestPath = null;
-            double max = Double.NegativeInfinity;
+            float max = float.NegativeInfinity;
             foreach (Path p in pathList)
             {
                 if (p.Lvaule > max)
@@ -221,7 +203,7 @@ namespace TravelAgency
         private Path MaxLValuePath(List<Path> pathList)
         {
             Path bestPath = null;
-            double max = Double.NegativeInfinity;
+            float max = float.NegativeInfinity;
             foreach (Path p in pathList)
             {
                 if (p.Lvaule > max)
@@ -235,12 +217,12 @@ namespace TravelAgency
 
         private float CalcSValue(Path real,int target)
         {
-            return -((Math.Abs(real.CityCount - target)) / target);
+            return -((Math.Abs((float)real.CityCount - target)) / target);
         }
 
         private float CalcTValue(Path real, int target)
         {
-            float T = (target - real.Transit) / target;
+            float T = ((float)target - real.Transit) / target;
             if (target >= real.Transit)
             {
                 return T;
@@ -250,18 +232,5 @@ namespace TravelAgency
                 return 3 * T;
             }
         }
-
-        [DllImport("CudaTest.dll")]
-        private static extern int addWithCuda(float[] result,float alaph, 
-                                              int[] tag,
-                                              int tagsum,
-                                              float beta,
-                                              int[] realCityCount,
-                                              int targetCityCount,
-                                              float eta,
-                                              int[] realTransit,
-                                              int targetTransit,
-                                              uint size);
-
     }
 }
