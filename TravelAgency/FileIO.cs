@@ -27,10 +27,12 @@ namespace TravelAgency
                 string filename = openFileDialog.FileName;
                 if (filename.Substring(filename.LastIndexOf(".") + 1) == "xlsx")
                 {
+                    map.Clear();
                     ImportFormExcel(filename, map);
                 }
                 else if (filename.Substring(filename.LastIndexOf(".") + 1) == "map")
                 {
+                    map.Clear();
                     ImportFormBinMap(filename, map);
                 }
                 return true;
@@ -60,7 +62,6 @@ namespace TravelAgency
         }
         public static void ImportFormBinMap(string path, AdjacencyGraph map)
         {
-            map.Clear();
             Stream fStream = new FileStream(path, FileMode.Open, FileAccess.Read);
             BinaryFormatter binFormat = new BinaryFormatter();
             fStream.Position = 0;
@@ -70,10 +71,8 @@ namespace TravelAgency
             City.tagDictionary = (Dictionary<string,int>)binFormat.Deserialize(fStream);
             fStream.Close();
         }
-
         private static void ImportFormExcel(string path,AdjacencyGraph map)
         {
-            map.Clear();
             if (path == null)
             {
                 return;
@@ -118,8 +117,8 @@ namespace TravelAgency
                 {
                     return c.Name == mapSheet.Cells[i, 1].Value2;
                 });
-                int j = 1;
-                while (mapSheet.Cells[i, j + 1].Value2 != null)
+                int j = 2;
+                while (mapSheet.Cells[i, j].Value2 != null)
                 {
                     city.AddTag(mapSheet.Cells[i, j].Value2);
                     j++;
@@ -129,7 +128,6 @@ namespace TravelAgency
             app.Quit();
             System.Windows.Forms.MessageBox.Show("导入成功！");
         }
-
         public static void ExportPathData(string path,List<Path> pathData,int depth)
         {
             FileInfo fileInfo = new FileInfo(path);
@@ -172,7 +170,6 @@ namespace TravelAgency
             fStream.Flush();
             fStream.Close();
         }
-
         public static List<Path> ImportPathData(string path)
         {
             Stream fStream = new FileStream(path, FileMode.Open, FileAccess.Read);
@@ -198,6 +195,46 @@ namespace TravelAgency
             }
             fStream.Close();
             return pathList;
+        }
+        public static List<Request> loadRequestFromTxt(String path, ref Guide guide)
+        {
+            List<Request> requestList = new List<Request>();
+            int lineCount = 0;
+            int ii = 0;
+            String[] subStr = null;
+            String[] subSubStr = null;
+            String[] subSubSubStr = null;
+            StreamReader reader = new StreamReader(path, Encoding.Default);
+            Request newReq = null;
+            while (reader.Peek() > 0)
+            {
+                lineCount++;
+                String temp = reader.ReadLine();
+                subStr = temp.Split(new char[] { '|' });
+                newReq = new Request();
+                newReq.name = subStr[0];
+                if (guide.Dict.ContainsKey(subStr[1]))
+                {
+                    newReq.start = guide.Dict[subStr[1]];
+                }
+                if (Int32.TryParse(subStr[3], out ii) == true)
+                {
+                    newReq.cityNum = ii;
+                }
+                if (Int32.TryParse(subStr[4], out ii) == true)
+                {
+                    newReq.total = ii;
+                }
+                subSubStr = subStr[2].Split(new char[] { ' ' });
+                foreach (String str in subSubStr)
+                {
+                    subSubSubStr = str.Split(',');
+                    newReq.tagList.Add(subSubSubStr[0]);
+                    newReq.rateList.Add(Int32.Parse(subSubSubStr[1]));
+                }
+                requestList.Add(newReq);
+            }
+            return requestList;
         }
     }
 }

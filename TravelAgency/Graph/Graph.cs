@@ -106,6 +106,7 @@ namespace TravelAgency
         public void Clear()
         {
             this.VertexList.Clear();
+            this.Dictionary.Clear();
         }
 
         public int GetCityIndex(City city)
@@ -113,7 +114,7 @@ namespace TravelAgency
             return dictionary[city.Name];
         }
 
-        private void UpdataAdjacencyMartix()
+        public void UpdataAdjacencyMartix()
         {
             adjacencyMartix = new int[vertexList.Count,vertexList.Count];
             pathMartix = new int[vertexList.Count, vertexList.Count];
@@ -139,15 +140,17 @@ namespace TravelAgency
         public void Floyd()
         {
             UpdataAdjacencyMartix();
+            int[,] costMartix = new int[vertexList.Count, vertexList.Count];
+            Array.Copy(adjacencyMartix, costMartix, vertexList.Count);
             for (int k = 0; k < vertexList.Count; k++)
             {
                 for (int i = 0; i < vertexList.Count; i++)
                 {
                     for (int j = 0; j < vertexList.Count; j++)
                     {
-                        if (adjacencyMartix[i,k] + adjacencyMartix[k,j] < adjacencyMartix[i,j])
+                        if (costMartix[i,k] + costMartix[k,j] < costMartix[i,j])
                         {
-                            adjacencyMartix[i, j] = adjacencyMartix[i, k] + adjacencyMartix[k, j];
+                            costMartix[i, j] = costMartix[i, k] + costMartix[k, j];
                             pathMartix[i,j] = pathMartix[k,j];
                         }
                     }

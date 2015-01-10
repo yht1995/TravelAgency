@@ -11,6 +11,59 @@ using System.Collections.Concurrent;
 
 namespace TravelAgency
 {
+    public class Plan
+    {
+        //方案类里面有游客姓名、起点、终点城市、历经城市数、路径、总费用、估价值以及标签。
+        public String name { get; set; }
+        public String begin { get; set; }
+        public String expCityNum { get; set; }
+        public String realCityNum { get; set; }
+        public String path { get; set; }
+        public String expTotal { get; set; }
+        public String realTotal { get; set; }
+        public String value { get; set; }
+        public String expTagList { get; set; }
+        public String realTagList { get; set; }
+
+        public void VisualizeInfo(ref Plan plan, ref CTsp tsp, Request theReq, ref Guide guide)
+        {
+            int ii = 0;
+            plan.name = theReq.name;
+            plan.begin = guide.CityList[theReq.start].Name;
+            plan.expCityNum = theReq.cityNum.ToString();
+            plan.expTotal = theReq.total.ToString();
+            for (ii = 0; ii < theReq.tagList.Count; ii++)
+            {
+                plan.expTagList += theReq.tagList[ii] + "_" + theReq.rateList[ii].ToString() + "、";
+            }
+            if (plan.expTagList.Length >= 2)
+                plan.expTagList.Substring(0, plan.expTagList.Length - 2);
+            plan.realCityNum = tsp.m_cBestAnt.m_nRealMovedCount.ToString();
+            plan.realTotal = tsp.m_cBestAnt.m_dbCost.ToString();
+            plan.value = tsp.m_cBestAnt.estimateValue.ToString();
+            for (ii = 0; ii < tsp.m_cBestAnt.tagList.Count; ii++)
+            {
+                plan.realTagList += tsp.m_cBestAnt.tagList[ii] + "、";
+            }
+            if (plan.realTagList.Length >= 2)
+                plan.realTagList.Substring(0, plan.realTagList.Length - 2);
+            for (ii = 0; ii < tsp.m_cBestAnt.m_nMovedCityCount; ii++)
+            {
+                plan.path += guide.CityList[tsp.m_cBestAnt.m_nPath[ii]].Name + "->";
+            }
+            plan.path = plan.path.Substring(0, plan.path.Length - 2);
+        }
+    }
+    public class Request
+    {
+        //请求【Request】:【起点】【终点】【城市数】【花费】【三大标签】
+        public String name { get; set; }
+        public int start { get; set; }
+        public int cityNum { get; set; }
+        public int total { get; set; }
+        public List<String> tagList;
+        public List<int> rateList;
+    }
     public class Path
     {
         public List<int> NameIndex;
@@ -61,7 +114,6 @@ namespace TravelAgency
             return a;
         }
     }
-
     public class Agency
     {
         private const string filePath = "E:\\Data";

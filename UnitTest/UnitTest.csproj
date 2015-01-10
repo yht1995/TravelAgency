@@ -35,6 +35,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Interop.LCC11">
+      <HintPath>..\TravelAgency\obj\Release\Interop.LCC11.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -76,6 +80,7 @@
   <ItemGroup>
     <Compile Include="AdjacencyGraphTest.cs" />
     <Compile Include="AgencyTest.cs" />
+    <Compile Include="CTspTest.cs" />
     <Compile Include="FileIOTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

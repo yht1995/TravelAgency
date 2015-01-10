@@ -73,11 +73,15 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Agency.cs" />
+    <Compile Include="ACO\CAnt.cs" />
     <Compile Include="CityEdit.xaml.cs">
       <DependentUpon>CityEdit.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Edge.cs" />
-    <Compile Include="Graph.cs" />
+    <Compile Include="ACO\Constants.cs" />
+    <Compile Include="ACO\CTsp.cs" />
+    <Compile Include="Graph\Edge.cs" />
+    <Compile Include="Graph\Graph.cs" />
+    <Compile Include="ACO\Guide.cs" />
     <Compile Include="Visualization.cs" />
     <Page Include="CityEdit.xaml">
       <SubType>Designer</SubType>
@@ -91,7 +95,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="City.cs" />
+    <Compile Include="Graph\City.cs" />
     <Compile Include="FileIO.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
