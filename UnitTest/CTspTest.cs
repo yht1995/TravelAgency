@@ -65,25 +65,25 @@ namespace UnitTest
         #endregion
 
 
-        [TestMethod()]
-        public void CTspSearchTest()
-        {
-            string path = "D:\\document\\大二上\\数据结构\\第四次大作业\\map.map"; // TODO: 初始化为适当的值
-            AdjacencyGraph map = new AdjacencyGraph();
-            FileIO.ImportFormBinMap(path, map);
-            map.UpdataAdjacencyMartix();
-            Guide guide = new Guide(map); // TODO: 初始化为适当的值
-            path = "D:\\document\\大二上\\数据结构\\第四次大作业\\测试数据.txt";
-            List<Request> ReqList = FileIO.loadRequestFromTxt(path,guide); // TODO: 初始化为适当的值
-            for (int i = 0; i < ReqList.Count; i++)
-            {
-                ACO tsp = new ACO(guide, ReqList[i]);
-                tsp.InitData();
-                tsp.Search();
-                Plan plan = new Plan(tsp,guide,ReqList[i]);
-                string s = plan.Value;
-            }
-            Assert.Inconclusive("TODO: 实现用来验证目标的代码");
-        }
+        //[TestMethod()]
+        //public void CTspSearchTest()
+        //{
+        //    string path = "D:\\document\\大二上\\数据结构\\第四次大作业\\map.map"; // TODO: 初始化为适当的值
+        //    AdjacencyGraph map = new AdjacencyGraph();
+        //    FileIO.ImportFormBinMap(path, map);
+        //    map.UpdataAdjacencyMartix();
+        //    Guide guide = new Guide(map); // TODO: 初始化为适当的值
+        //    path = "D:\\document\\大二上\\数据结构\\第四次大作业\\测试数据.txt";
+        //    List<Request> ReqList = FileIO.loadRequestFromTxt(path,guide); // TODO: 初始化为适当的值
+        //    for (int i = 0; i < ReqList.Count; i++)
+        //    {
+        //        ACO tsp = new ACO(guide, ReqList[i]);
+        //        tsp.InitData();
+        //        tsp.Search();
+        //        Plan plan = new Plan(tsp,guide,ReqList[i]);
+        //        string s = plan.Value;
+        //    }
+        //    Assert.Inconclusive("TODO: 实现用来验证目标的代码");
+        //}
     }
 }

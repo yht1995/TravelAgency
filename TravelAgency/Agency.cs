@@ -11,21 +11,6 @@ using System.Collections.Concurrent;
 
 namespace TravelAgency
 {
-    public class Request
-    {
-        public String name;
-        public int start;
-        public int cityNum;
-        public int total;
-        public List<String> tagList;
-        public List<int> rateList;
-
-        public Request()
-        {
-            tagList = new List<String>();
-            rateList = new List<int>();
-        }
-    }
     public class Path
     {
         public List<int> NameIndex;

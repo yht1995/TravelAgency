@@ -102,7 +102,15 @@ namespace TravelAgency
         }
         public int GetCityIndex(City city)
         {
-            return dictionary[city.Name];
+            int result;
+            if (this.dictionary.TryGetValue(city.Name, out result))
+            {
+                return result;
+            }
+            else
+            {
+                return -1;
+            }
         }
         public City FindCitybyName(string name)
         {

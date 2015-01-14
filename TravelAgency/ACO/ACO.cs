@@ -9,48 +9,46 @@ namespace TravelAgency
 {
     public class ACO
     {
-        CAnt[,] m_cAntAry;
-        public CAnt m_cBestAnt;
-        public Guide theGuide;
-        public Request theReq;
-        
+        CAnt[] antArray;
+        public CAnt bestAnt;
+        public Guide guide;
+        public Request request;
+        private Constants constants = new Constants();
+        double[,] trialMartix;
 
-        public ACO(Guide guide, Request req)
+        public ACO(Guide guide, Request request)
         {
-            m_cAntAry = new CAnt[Constants.N_THREAD, Constants.N_ANT_COUNT];
-            for (int i = 0; i < Constants.N_THREAD; i++)
+            trialMartix = new double[constants.MaxCityNum,constants.MaxCityNum];
+            antArray = new CAnt[constants.N_ANT_COUNT];
+            for (int j = 0; j < constants.N_ANT_COUNT; j++)
             {
-                for (int j = 0; j < Constants.N_ANT_COUNT; j++)
-                {
-                    m_cAntAry[i,j] = new CAnt(ref guide, ref req);
-                }
-                    
+                antArray[j] = new CAnt(guide, request, constants, ref trialMartix);
             }
-            theGuide = guide;
-            theReq = req;
-            m_cBestAnt = new CAnt(ref guide, ref req);
+            this.guide = guide;
+            this.request = request;
+            bestAnt = new CAnt(guide, request, constants, ref trialMartix);
         }
 
         public void InitData()
         {
-            m_cBestAnt.Initial();
-            m_cBestAnt.estimateValue = 0.0;
-            for (int i = 0; i < theGuide.CityList.Count; i++)
+            bestAnt.Initial();
+            bestAnt.estimateValue = 0.0;
+            for (int i = 0; i < guide.CityList.Count; i++)
             {
-                for (int j = 0; j < theGuide.CityList.Count; j++)
+                for (int j = 0; j < guide.CityList.Count; j++)
                 {
-                    Constants.g_Trial[i, j] = 1.0;
+                    trialMartix[i, j] = 1.0;
                 }
             }
         }
 
         public void UpdateTrial()
         {
-            double[,] dbTempAry = new double[theGuide.CityList.Count,theGuide.CityList.Count];
+            double[,] dbTempAry = new double[guide.CityList.Count,guide.CityList.Count];
 
-            for (int i = 0; i < theGuide.CityList.Count; i++)
+            for (int i = 0; i < guide.CityList.Count; i++)
             {
-                for (int j = 0; j < theGuide.CityList.Count; j++)
+                for (int j = 0; j < guide.CityList.Count; j++)
                 {
                     dbTempAry[i, j] = 0.0;
                 }
@@ -58,64 +56,54 @@ namespace TravelAgency
 
             int m = 0;
             int n = 0;
-            for (int i = 0; i < Constants.N_THREAD; i++)
-            {
-                for (int ii = 0; ii < Constants.N_ANT_COUNT; ii++)
+                for (int i = 0; i < constants.N_ANT_COUNT; i++)
                 {
-                    for (int j = 1; j < m_cAntAry[i, ii].m_nMovedCityCount; j++)
+                    for (int j = 1; j < antArray[i].movedCityCount; j++)
                     {
-                        m = m_cAntAry[i, ii].m_nPath[j];
-                        n = m_cAntAry[i, ii].m_nPath[j - 1];
-                        dbTempAry[n, m] += Constants.DBQ * m_cAntAry[i, ii].estimateValue / 1000;
+                        m = antArray[i].path[j];
+                        n = antArray[i].path[j - 1];
+                        dbTempAry[n, m] += constants.DBQ * antArray[i].estimateValue / 1000;
                         dbTempAry[m, n] = dbTempAry[n, m];
                     }
                 }
-            }
 
-            for (int i = 0; i < theGuide.CityList.Count; i++)
+            for (int i = 0; i < guide.CityList.Count; i++)
             {
-                for (int j = 0; j < theGuide.CityList.Count; j++)
+                for (int j = 0; j < guide.CityList.Count; j++)
                 {
-                    Constants.g_Trial[i, j] = Constants.g_Trial[i, j] * Constants.ROU + dbTempAry[i, j];
+                    trialMartix[i, j] = trialMartix[i, j] * constants.ROU + dbTempAry[i, j];
                 }
             }
         }
 
         public void Search()
         {
-            for (int i = 0; i < Constants.N_IT_COUNT; i++)
+            for (int i = 0; i < constants.N_IT_COUNT; i++)
             {
-                for(int j = 0; j < Constants.N_ANT_COUNT;j++)
+                for(int j = 0; j < constants.N_ANT_COUNT;j++)
                 {
-                    Parallel.For(0, Constants.N_THREAD, (k) => 
+                    antArray[j].Search();
+                    if (antArray[j].estimateValue > bestAnt.estimateValue)
                     {
-                        m_cAntAry[k, j].Search();
-                    });
+                        bestAnt.estimateValue = antArray[j].estimateValue;
 
-                    for(int k = 0; k < Constants.N_THREAD; k++)
-                    {
-                        if (m_cAntAry[k,j].estimateValue > m_cBestAnt.estimateValue)
+                        for (int ii = 0; ii < antArray[j].movedCityCount; ii++)
                         {
-                            m_cBestAnt.estimateValue = m_cAntAry[k,j].estimateValue;
-
-                            for (int ii = 0; ii < m_cAntAry[k,j].m_nMovedCityCount; ii++)
-                            {
-                                m_cBestAnt.m_nPath[ii] = m_cAntAry[k,j].m_nPath[ii];
-                            }
-                            m_cBestAnt.tagList.Clear();
-                            for (int jj = 0; jj < m_cAntAry[k,j].tagList.Count; jj++)
-                            {
-                                m_cBestAnt.tagList.Add(m_cAntAry[k,j].tagList[jj]);
-                            }
-                      
-                            m_cBestAnt.m_dbCost = m_cAntAry[k,j].m_dbCost;
-                            m_cBestAnt.m_nRealMovedCount = m_cAntAry[k,j].m_nRealMovedCount;
-                            m_cBestAnt.m_nMovedCityCount = m_cAntAry[k,j].m_nMovedCityCount;
+                            bestAnt.path[ii] = antArray[j].path[ii];
                         }
-                    }                   
+                        bestAnt.tagList.Clear();
+                        for (int jj = 0; jj < antArray[j].tagList.Count; jj++)
+                        {
+                            bestAnt.tagList.Add(antArray[j].tagList[jj]);
+                        }
+
+                        bestAnt.dbCost = antArray[j].dbCost;
+                        bestAnt.realMovedCount = antArray[j].realMovedCount;
+                        bestAnt.movedCityCount = antArray[j].movedCityCount;
+                    }
                 }
-                UpdateTrial();
             }
-        }
+            UpdateTrial();
+        }  
     }
 }

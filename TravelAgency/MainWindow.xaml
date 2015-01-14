@@ -29,7 +29,7 @@
                 </Grid>
             </GroupBox>
 
-            <GroupBox Header="路径推荐" HorizontalAlignment="Left" Margin="135,10,0,10" Width="300">
+            <GroupBox Header="路径推荐" HorizontalAlignment="Left" Margin="135,10,0,10" Width="357">
                 <Grid>
                     <Label Content="姓名" HorizontalAlignment="Left" Margin="8,8,0,0" VerticalAlignment="Top"/>
                     <TextBox x:Name="name"  HorizontalAlignment="Left" Height="23" Margin="68,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="50"/>
@@ -37,13 +37,13 @@
                     <TextBox x:Name="expCityNum" HorizontalAlignment="Left" Height="23" Margin="68,40,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="50"/>
                     <Label Content="预算" HorizontalAlignment="Left" Margin="9,68,0,0" VerticalAlignment="Top"/>
                     <TextBox x:Name="expTotal" HorizontalAlignment="Left" Height="23" Margin="68,70,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="50"/>
-                    <Button x:Name="search" Content="查找" HorizontalAlignment="Left" Height="23" Margin="81,105,0,0" VerticalAlignment="Top" Width="37"/>
-                    <Button x:Name="searchFile" Content="导入需求" HorizontalAlignment="Left" Height="23" Margin="8,105,0,0" VerticalAlignment="Top" Width="59"/>
-                    <ListView x:Name="tagListView" HorizontalAlignment="Left" Height="130" Margin="140,10,10,10" VerticalAlignment="Top" ItemsSource="{Binding}">
+                    <Button x:Name="search" Content="查找" HorizontalAlignment="Left" Height="23" Margin="81,105,0,0" VerticalAlignment="Top" Width="37" Click="search_Click"/>
+                    <Button x:Name="searchFile" Content="导入需求" HorizontalAlignment="Left" Height="23" Margin="8,105,0,0" VerticalAlignment="Top" Width="59" Click="searchFile_Click"/>
+                    <ListView x:Name="tagListView" HorizontalAlignment="Left" Height="118" Margin="140,10,0,0" VerticalAlignment="Top" ItemsSource="{Binding}" Width="195">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn Header="标签" Width="70" DisplayMemberBinding="{Binding Path=tag}"/>
-                                <GridViewColumn Header="星级" Width="70">
+                                <GridViewColumn Header="标签" Width="90" DisplayMemberBinding="{Binding Path=tag}"/>
+                                <GridViewColumn Header="星级" Width="90">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <Grid>
@@ -58,11 +58,16 @@
                 </Grid>
             </GroupBox>
 
-            <ListView Margin="440,10,10,10" ItemsSource="{Binding}">
+            <ListView x:Name="planListView"  Margin="497,10,10,10" ItemsSource="{Binding}" MouseDoubleClick="planListView_MouseDoubleClick">
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem x:Name="ClearList" Header="清空列表" Click="ClearList_Click"></MenuItem>
+                    </ContextMenu>
+                </ListView.ContextMenu>
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="姓名" Width="55" TextBlock.TextAlignment="Center"  DisplayMemberBinding="{Binding Name}"/>
-                        <GridViewColumn Header="推荐路线" Width="310" TextBlock.TextAlignment="Center" DisplayMemberBinding="{Binding Path}"/>
+                        <GridViewColumn Header="推荐路线" Width="310" TextBlock.TextAlignment="Center" DisplayMemberBinding="{Binding PathString}"/>
                         <GridViewColumn Header="实际城市数" Width="100" TextBlock.TextAlignment="Center" DisplayMemberBinding="{Binding RealCityNum}"/>
                         <GridViewColumn Header="实际花费" Width="100" TextBlock.TextAlignment="Center" DisplayMemberBinding="{Binding RealTotal}"/>
                         <GridViewColumn Header="实际标签" Width="200" TextBlock.TextAlignment="Center" DisplayMemberBinding="{Binding RealTagList}"/>
@@ -70,6 +75,16 @@
                     </GridView>
                 </ListView.View>
             </ListView>
+
+            <Grid Background="Transparent" Margin="685,52,217,38">
+                <ProgressBar x:Name="progressBar"  Minimum="0" Height="75" Width ="75" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <ProgressBar.Template>
+                        <ControlTemplate TargetType="ProgressBar">
+                            <Border Background="{TemplateBinding Value, Converter={StaticResource ValueToProcessConverter}, ConverterParameter=200}"/>
+                        </ControlTemplate>
+                    </ProgressBar.Template>
+                </ProgressBar>
+            </Grid>
         </Grid>
 
         <Grid Background="#FFE5E5E5" Width="280" Margin="0,0,0,180" HorizontalAlignment="Right">
@@ -83,7 +98,7 @@
                     <TextBox x:Name="latitude" HorizontalAlignment="Left" Height="23" Margin="60,70,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="86"/>
                     <Label Content="中转费" HorizontalAlignment="Left" Margin="10,98,0,0" VerticalAlignment="Top"/>
                     <TextBox x:Name="transitFee" HorizontalAlignment="Left" Height="23" Margin="60,100,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="86"/>
-                    <ListBox x:Name="tagList" Margin="151,25,0,0" HorizontalAlignment="Left" Width="97" Height="166" VerticalAlignment="Top"/>
+                    <ListBox x:Name="cityTagList" Margin="151,25,0,0" HorizontalAlignment="Left" Width="97" Height="166" VerticalAlignment="Top"/>
                     <Label Content="城市标签" HorizontalAlignment="Left" Margin="151,0,0,0" VerticalAlignment="Top"/>
                 </Grid>
             </GroupBox>
@@ -99,20 +114,5 @@
                 </ListView>
             </GroupBox>
         </Grid>
-
-        <!--<TabItem Header="路径推荐">
-                <Grid Background="#FFE5E5E5">
-                    
-                    <ProgressBar Minimum="0" Height="40" Width ="40" Margin="0,0,10,10"  HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                    Maximum="100"
-                    Value="{Binding SuccessRate, Mode=OneWay}">
-                        <ProgressBar.Template>
-                            <ControlTemplate TargetType="ProgressBar">
-                                <Border Background="{TemplateBinding Value, Converter={StaticResource ValueToProcessConverter}, ConverterParameter=200}"/>
-                            </ControlTemplate>
-                        </ProgressBar.Template>
-                    </ProgressBar>
-                </Grid>
-            </TabItem>-->
     </Grid>
 </Window>

@@ -98,7 +98,7 @@ namespace UnitTest
         /// <summary>
         ///BestPath 的测试
         ///</summary>
-        [TestMethod()]
+        //[TestMethod()]
         public void BestPathTest()
         {
             string path = "D:\\document\\大二上\\数据结构\\第四次大作业\\map.map"; // TODO: 初始化为适当的值

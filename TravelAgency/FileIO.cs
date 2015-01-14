@@ -196,42 +196,52 @@ namespace TravelAgency
             fStream.Close();
             return pathList;
         }
-        public static List<Request> loadRequestFromTxt(String path,Guide guide)
+        public static List<Request> loadRequestFromTxt(Guide guide)
         {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Title = "选择文件";
+            openFileDialog.Filter = "需求文件|*.txt";
+            openFileDialog.FileName = string.Empty;
+            openFileDialog.FilterIndex = 1;
+            openFileDialog.RestoreDirectory = true;
+            openFileDialog.DefaultExt = "txt";
             List<Request> requestList = new List<Request>();
-            int lineCount = 0;
-            int ii = 0;
-            String[] subStr = null;
-            String[] subSubStr = null;
-            String[] subSubSubStr = null;
-            StreamReader reader = new StreamReader(path, Encoding.Default);
-            while (reader.Peek() > 0)
+            if (openFileDialog.ShowDialog() == true)
             {
-                lineCount++;
-                String temp = reader.ReadLine();
-                subStr = temp.Split(new char[] { '|' });
-                Request newReq = new Request();
-                newReq.name = subStr[0];
-                if (guide.Dict.ContainsKey(subStr[1]))
+                int lineCount = 0;
+                int ii = 0;
+                String[] subStr = null;
+                String[] subSubStr = null;
+                String[] subSubSubStr = null;
+                StreamReader reader = new StreamReader(openFileDialog.FileName, Encoding.Default);
+                while (reader.Peek() > 0)
                 {
-                    newReq.start = guide.Dict[subStr[1]];
+                    lineCount++;
+                    String temp = reader.ReadLine();
+                    subStr = temp.Split(new char[] { '|' });
+                    Request newReq = new Request();
+                    newReq.name = subStr[0];
+                    if (guide.Dict.ContainsKey(subStr[1]))
+                    {
+                        newReq.start = guide.Dict[subStr[1]];
+                    }
+                    if (Int32.TryParse(subStr[3], out ii) == true)
+                    {
+                        newReq.cityNum = ii;
+                    }
+                    if (Int32.TryParse(subStr[4], out ii) == true)
+                    {
+                        newReq.total = ii;
+                    }
+                    subSubStr = subStr[2].Split(new char[] { ' ' });
+                    foreach (String str in subSubStr)
+                    {
+                        subSubSubStr = str.Split(',');
+                        newReq.tagList.Add(subSubSubStr[0]);
+                        newReq.rateList.Add(Int32.Parse(subSubSubStr[1]));
+                    }
+                    requestList.Add(newReq);
                 }
-                if (Int32.TryParse(subStr[3], out ii) == true)
-                {
-                    newReq.cityNum = ii;
-                }
-                if (Int32.TryParse(subStr[4], out ii) == true)
-                {
-                    newReq.total = ii;
-                }
-                subSubStr = subStr[2].Split(new char[] { ' ' });
-                foreach (String str in subSubStr)
-                {
-                    subSubSubStr = str.Split(',');
-                    newReq.tagList.Add(subSubSubStr[0]);
-                    newReq.rateList.Add(Int32.Parse(subSubSubStr[1]));
-                }
-                requestList.Add(newReq);
             }
             return requestList;
         }

@@ -9,72 +9,81 @@ namespace TravelAgency
 {
     public class CAnt
     {
-        public int[] m_nPath;           //蚂蚁走的路径
-        //public int[] m_nAllowedCity;    //没去过的城市
-
-        int m_nCurCityNo;               //当前所在城市编号
-        public int m_nMovedCityCount;          //已经去过的城市的数量
-        public int m_nRealMovedCount;          //实际去过的城市的数量
-        public int m_dbCost;         //蚂蚁走过的路径花费(边+节点费)
+        public int[] path;           //蚂蚁走的路径
+        public int movedCityCount;          //已经去过的城市的数量
+        public int realMovedCount;          //实际去过的城市的数量
+        public int dbCost;         //蚂蚁走过的路径花费(边+节点费)
         public List<String> tagList;    //标签
         public double estimateValue;    //预期估值 
-        bool[] isRouted;
+        
+        private int currentCityIndex;               //当前所在城市编号
+        private bool[] isRouted;
+        private double[,] trialMartix;
+        
+        private Guide guide;
+        private Request request;
+        private Constants constants;
 
-        Guide theGuide;
-        Request theReq;
-
-        public CAnt(ref Guide guide, ref Request req)
+        private double random(double dbLow, double dbUpper)
         {
+            double dbTemp = (double)constants.rand.Next(constants.RAND_MAX) / ((double)constants.RAND_MAX + 1.0);
+            return dbLow + dbTemp * (dbUpper - dbLow);
+        }
+
+        public CAnt(Guide guide, Request req,Constants constants,ref double[,] g_Trial)
+        {
+            this.constants = constants;
+            this.trialMartix = g_Trial;
             tagList = new List<String>();
-            m_nPath = new int[guide.CityList.Count];
+            path = new int[guide.CityList.Count];
             isRouted = new bool[guide.CityList.Count];
             tagList = null;
-            theGuide = guide;
-            theReq = req;
+            this.guide = guide;
+            this.request = req;
         }
 
         public void Initial()
         {
-            for (int i = 0; i < theGuide.CityList.Count; i++)
+            for (int i = 0; i < guide.CityList.Count; i++)
             {
-                m_nPath[i] = -1;
+                path[i] = -1;
                 isRouted[i] = false;
             }
 
-            m_dbCost = 0;
+            dbCost = 0;
 
-            m_nCurCityNo = theReq.start;
+            currentCityIndex = request.start;
 
             tagList = new List<string>();
 
-            m_nPath[0] = m_nCurCityNo;
-            m_nMovedCityCount = 1;
-            m_nRealMovedCount = 0;
+            path[0] = currentCityIndex;
+            movedCityCount = 1;
+            realMovedCount = 0;
         }
 
         public void calValue()
         {
             int index = 0;
-            int 分子 = 0;
-            int 分母 = 0;
-            foreach (String expectTag in theReq.tagList)
+            int a = 0;
+            int b = 0;
+            foreach (String expectTag in request.tagList)
             {
                 if(tagList.Contains(expectTag) == true)
                 {
-                    分子 += theReq.rateList[index];
+                    a += request.rateList[index];
                 }
 
-                分母 += theReq.rateList[index];
+                b += request.rateList[index];
                 index = index + 1;
             }
-            estimateValue = theGuide.Parameter[0] * 分子/分母 ;
+            estimateValue = guide.Parameter[0] * a/b ;
 
-            estimateValue -= theGuide.Parameter[1] * Math.Abs(theReq.cityNum - m_nRealMovedCount) / theReq.cityNum;
+            estimateValue -= guide.Parameter[1] * Math.Abs(request.cityNum - realMovedCount) / request.cityNum;
 
-            if (m_dbCost < theReq.total)
-                estimateValue += theGuide.Parameter[2] * (theReq.total - m_dbCost) / theReq.total;
+            if (dbCost < request.total)
+                estimateValue += guide.Parameter[2] * (request.total - dbCost) / request.total;
             else
-                estimateValue += theGuide.Parameter[2] * 3 * (theReq.total - m_dbCost) / theReq.total;
+                estimateValue += guide.Parameter[2] * 3 * (request.total - dbCost) / request.total;
 
         }
 
@@ -84,15 +93,15 @@ namespace TravelAgency
 
             //计算去过和没去过的城市的信息素总和
             double dbTotal = 0.0;
-            double[] prob = new double[theGuide.CityList.Count];
+            double[] prob = new double[guide.CityList.Count];
 
-            for (int i = 0; i < theGuide.CityList.Count; i++)
+            for (int i = 0; i < guide.CityList.Count; i++)
             {
                 //if (m_nAllowedCity[i] == 1 && theGuide.CityList[i] != null)
-                if (theGuide.CityList[i] != null && i !=  m_nCurCityNo)
+                if (guide.CityList[i] != null && i !=  currentCityIndex)
                 {
-                    prob[i] = Math.Pow(Constants.g_Trial[m_nCurCityNo, i], Constants.ALPHA) *
-                                Math.Pow(1.0 / theGuide.Expense[m_nCurCityNo, i], Constants.BETA);
+                    prob[i] = Math.Pow(trialMartix[currentCityIndex, i], constants.ALPHA) *
+                                Math.Pow(1.0 / guide.Expense[currentCityIndex, i], constants.BETA);
                     dbTotal += prob[i];
                 }
                 else
@@ -105,11 +114,11 @@ namespace TravelAgency
             double dbTemp = 0.0;
             if (dbTotal > 0.0)
             {
-                dbTemp = Constants.rnd(0.0, dbTotal);
+                dbTemp = this.random(0.0, dbTotal);
 
-                for (int i = 0; i < theGuide.CityList.Count; i++)
+                for (int i = 0; i < guide.CityList.Count; i++)
                 {
-                    if (i != m_nCurCityNo && theGuide.CityList[i] != null)
+                    if (i != currentCityIndex && guide.CityList[i] != null)
                     {
                         dbTemp -= prob[i];
                         if (dbTemp < 0.0)
@@ -123,9 +132,9 @@ namespace TravelAgency
 
             if (nSelectedCity == -1)
             {
-                for (int i = 0; i < theGuide.CityList.Count; i++)
+                for (int i = 0; i < guide.CityList.Count; i++)
                 {
-                    if (i!=m_nCurCityNo && theGuide.CityList[i] != null)
+                    if (i!=currentCityIndex && guide.CityList[i] != null)
                     {
                         nSelectedCity = i;
                         break;
@@ -140,41 +149,40 @@ namespace TravelAgency
         {
             int nCityNo = ChooseNextCity();
 
-            m_nPath[m_nMovedCityCount] = nCityNo;
-            m_nCurCityNo = nCityNo;
-            m_nMovedCityCount++;
+            path[movedCityCount] = nCityNo;
+            currentCityIndex = nCityNo;
+            movedCityCount++;
             if (isRouted[nCityNo] == false)
             {
                 isRouted[nCityNo] = true;
-                m_nRealMovedCount++;
+                realMovedCount++;
             }
-            
         }
 
         public void CalPathLength()
         {
-            m_dbCost = 0;
+            dbCost = 0;
             int m = 0;
             int n = 0;
-            for (int i = 1; i < m_nMovedCityCount ; i++)
+            for (int i = 1; i < movedCityCount ; i++)
             {
-                m = m_nPath[i];
-                n = m_nPath[i - 1];
-                m_dbCost += theGuide.Expense[m, n];
-                m_dbCost += theGuide.CityList[m].TransitFees;
+                m = path[i];
+                n = path[i - 1];
+                dbCost += guide.Expense[m, n];
+                dbCost += guide.CityList[m].TransitFees;
             }
-            m_dbCost -= theGuide.CityList[m_nMovedCityCount-1].TransitFees;
+            dbCost -= guide.CityList[movedCityCount-1].TransitFees;
         }
 
         public void AddTagList()
         {
-            for (int i = 1; i < m_nMovedCityCount; i++)
+            for (int i = 1; i < movedCityCount; i++)
             {
-                if (i != theReq.start)
+                if (i != request.start)
                 {
-                    foreach (String newTag in theGuide.CityList[m_nPath[i]].Tags)
+                    foreach (String newTag in guide.CityList[path[i]].Tags)
                     {
-                        if (theReq.tagList.Contains(newTag) && !tagList.Contains(newTag))
+                        if (request.tagList.Contains(newTag) && !tagList.Contains(newTag))
                         {
                             tagList.Add(newTag);
                         }
@@ -186,17 +194,17 @@ namespace TravelAgency
         public void Search()
         {
             Initial();
-            while(m_nMovedCityCount ==1 || (m_nMovedCityCount < Constants.searchStep && (m_nPath[m_nMovedCityCount-1] != theReq.start)))
+            while (movedCityCount == 1 || (movedCityCount < constants.searchStep && (path[movedCityCount - 1] != request.start)))
             {
                 Move();
             }
-            if (m_nMovedCityCount == Constants.searchStep)
+            if (movedCityCount == constants.searchStep)
             {
-                if (m_nPath[m_nMovedCityCount-1] == theReq.start)
+                if (path[movedCityCount-1] == request.start)
                 {
                     CalPathLength();
                     AddTagList();
-                    m_nRealMovedCount = m_nRealMovedCount - 1;
+                    realMovedCount = realMovedCount - 1;
                     calValue();
                 }
             }
@@ -204,7 +212,7 @@ namespace TravelAgency
             {
                 CalPathLength();
                 AddTagList();
-                m_nRealMovedCount = m_nRealMovedCount - 1;
+                realMovedCount = realMovedCount - 1;
                 calValue();
             }
         }
