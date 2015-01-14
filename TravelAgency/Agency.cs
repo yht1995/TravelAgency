@@ -11,58 +11,20 @@ using System.Collections.Concurrent;
 
 namespace TravelAgency
 {
-    public class Plan
-    {
-        //方案类里面有游客姓名、起点、终点城市、历经城市数、路径、总费用、估价值以及标签。
-        public String name { get; set; }
-        public String begin { get; set; }
-        public String expCityNum { get; set; }
-        public String realCityNum { get; set; }
-        public String path { get; set; }
-        public String expTotal { get; set; }
-        public String realTotal { get; set; }
-        public String value { get; set; }
-        public String expTagList { get; set; }
-        public String realTagList { get; set; }
-
-        public void VisualizeInfo(ref Plan plan, ref CTsp tsp, Request theReq, ref Guide guide)
-        {
-            int ii = 0;
-            plan.name = theReq.name;
-            plan.begin = guide.CityList[theReq.start].Name;
-            plan.expCityNum = theReq.cityNum.ToString();
-            plan.expTotal = theReq.total.ToString();
-            for (ii = 0; ii < theReq.tagList.Count; ii++)
-            {
-                plan.expTagList += theReq.tagList[ii] + "_" + theReq.rateList[ii].ToString() + "、";
-            }
-            if (plan.expTagList.Length >= 2)
-                plan.expTagList.Substring(0, plan.expTagList.Length - 2);
-            plan.realCityNum = tsp.m_cBestAnt.m_nRealMovedCount.ToString();
-            plan.realTotal = tsp.m_cBestAnt.m_dbCost.ToString();
-            plan.value = tsp.m_cBestAnt.estimateValue.ToString();
-            for (ii = 0; ii < tsp.m_cBestAnt.tagList.Count; ii++)
-            {
-                plan.realTagList += tsp.m_cBestAnt.tagList[ii] + "、";
-            }
-            if (plan.realTagList.Length >= 2)
-                plan.realTagList.Substring(0, plan.realTagList.Length - 2);
-            for (ii = 0; ii < tsp.m_cBestAnt.m_nMovedCityCount; ii++)
-            {
-                plan.path += guide.CityList[tsp.m_cBestAnt.m_nPath[ii]].Name + "->";
-            }
-            plan.path = plan.path.Substring(0, plan.path.Length - 2);
-        }
-    }
     public class Request
     {
-        //请求【Request】:【起点】【终点】【城市数】【花费】【三大标签】
-        public String name { get; set; }
-        public int start { get; set; }
-        public int cityNum { get; set; }
-        public int total { get; set; }
+        public String name;
+        public int start;
+        public int cityNum;
+        public int total;
         public List<String> tagList;
         public List<int> rateList;
+
+        public Request()
+        {
+            tagList = new List<String>();
+            rateList = new List<int>();
+        }
     }
     public class Path
     {
@@ -70,7 +32,7 @@ namespace TravelAgency
         public List<int> Tag;
         public int Transit;
         private int cityCount;
-        public float Lvaule;
+        public double Lvaule;
         private static int tagCount = City.tagList.Count;
         public int CityCount
         {
@@ -85,7 +47,6 @@ namespace TravelAgency
             Transit = 0;
             cityCount = 0;
         }
-
         public void AddCity(City city,int cityIndex)
         {
             if (!NameIndex.Contains(cityIndex))
@@ -103,7 +64,6 @@ namespace TravelAgency
                 }
             }
         }
-
         public int CalcIValue(int[] rate)
         {
             int a = 0;
@@ -114,12 +74,13 @@ namespace TravelAgency
             return a;
         }
     }
+
     public class Agency
     {
         private const string filePath = "E:\\Data";
-        private float alaph = 3;
-        private float beta = 1;
-        private float eta = 5;
+        private double alaph = 3;
+        private double beta = 1;
+        private double eta = 5;
         private const int bufSize = 500000;
 
         private class searchNode
@@ -129,7 +90,6 @@ namespace TravelAgency
             public int depth;
             public int cost;
         }
-
         public void PrepareData(AdjacencyGraph map)
         {
             foreach (City city in map.VertexList)
@@ -140,7 +100,6 @@ namespace TravelAgency
                 }
             }
         }
-
         public void EnumeratePath(AdjacencyGraph map,City start,int count)
         {
             List<Path> result = new List<Path>();
@@ -202,7 +161,6 @@ namespace TravelAgency
             }
             FileIO.ExportPathData(filePath + "\\" + start.Name + "\\",result,count);
         }
-
         public Path BestPath(City city, int[] rate, int targetCityCount, int targetTransitFee)
         {
             FileInfo fileInfo;
@@ -236,11 +194,10 @@ namespace TravelAgency
             }
             return MaxLValuePath(betterList);
         }
-
         private Path MaxLValuePath(BlockingCollection<Path> pathList)
         {
             Path bestPath = null;
-            float max = float.NegativeInfinity;
+            double max = double.NegativeInfinity;
             foreach (Path p in pathList)
             {
                 if (p.Lvaule > max)
@@ -251,11 +208,10 @@ namespace TravelAgency
             }
             return bestPath;
         }
-
         private Path MaxLValuePath(List<Path> pathList)
         {
             Path bestPath = null;
-            float max = float.NegativeInfinity;
+            double max = double.NegativeInfinity;
             foreach (Path p in pathList)
             {
                 if (p.Lvaule > max)
@@ -266,15 +222,13 @@ namespace TravelAgency
             }
             return bestPath;
         }
-
-        private float CalcSValue(Path real,int target)
+        private double CalcSValue(Path real,int target)
         {
-            return -((Math.Abs((float)real.CityCount - target)) / target);
+            return -((Math.Abs((double)real.CityCount - target)) / target);
         }
-
-        private float CalcTValue(Path real, int target)
+        private double CalcTValue(Path real, int target)
         {
-            float T = ((float)target - real.Transit) / target;
+            double T = ((double)target - real.Transit) / target;
             if (target >= real.Transit)
             {
                 return T;

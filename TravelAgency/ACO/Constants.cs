@@ -8,7 +8,7 @@ namespace TravelAgency
 {
     static class Constants
     {
-        public const int MaxCityNum = 50;
+        public static int MaxCityNum = 50;
         public const int InitialValue = 99999;
         public const double para_ALPHA = 3.0;//3.0
         public const double para_BETA = 1.0;//1.0

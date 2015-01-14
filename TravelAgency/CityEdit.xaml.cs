@@ -85,6 +85,7 @@ namespace TravelAgency
         }
         private void UpdateCity()
         {
+            city = new City();
             city.Name = this.cityName.Text;
             city.Longitude = LongitudeClass.FromString(this.longtitudeSign.Text + this.longitude.Text);
             city.Latitude = LatitudeClass.FromString(this.latitudeSign.Text + this.latitude.Text);

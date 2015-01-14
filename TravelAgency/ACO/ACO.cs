@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace TravelAgency
 {
-    public class CTsp
+    public class ACO
     {
         CAnt[,] m_cAntAry;
         public CAnt m_cBestAnt;
@@ -15,7 +15,7 @@ namespace TravelAgency
         public Request theReq;
         
 
-        public CTsp(Guide guide, Request req)
+        public ACO(Guide guide, Request req)
         {
             m_cAntAry = new CAnt[Constants.N_THREAD, Constants.N_ANT_COUNT];
             for (int i = 0; i < Constants.N_THREAD; i++)

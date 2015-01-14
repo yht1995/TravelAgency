@@ -25,9 +25,9 @@ namespace TravelAgency
 
         public CAnt(ref Guide guide, ref Request req)
         {
+            tagList = new List<String>();
             m_nPath = new int[guide.CityList.Count];
             isRouted = new bool[guide.CityList.Count];
-            //m_nAllowedCity = new int[MAXX];
             tagList = null;
             theGuide = guide;
             theReq = req;
@@ -37,10 +37,6 @@ namespace TravelAgency
         {
             for (int i = 0; i < theGuide.CityList.Count; i++)
             {
-                //if (theGuide.CityList[i] != null)
-                //    m_nAllowedCity[i] = 1;
-                //else
-                //    m_nAllowedCity[i] = 0;
                 m_nPath[i] = -1;
                 isRouted[i] = false;
             }

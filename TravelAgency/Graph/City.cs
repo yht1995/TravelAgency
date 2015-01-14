@@ -21,7 +21,6 @@ namespace TravelAgency
         private List<string> tags;
 
         #endregion
-
         #region 属性
         public double Longitude
         {
@@ -67,7 +66,6 @@ namespace TravelAgency
             this.neighborList = new List<Edge>();
             this.tags = new List<string>();
         }
-
         public City(string name, string longitude, string latitude, string transitFees)
         {
             this.name = name;
@@ -82,7 +80,6 @@ namespace TravelAgency
             this.neighborList = new List<Edge>();
             this.tags = new List<string>();
         }
-
         public void AddEdge(City end, int edge)
         {
             Edge e = new Edge(this, end, edge);
@@ -91,7 +88,6 @@ namespace TravelAgency
                 this.neighborList.Add(e);
             }
         }
-
         public void RemoveEdge(City end)
         {
             this.neighborList.RemoveAll(delegate(Edge a)
@@ -99,7 +95,6 @@ namespace TravelAgency
                 return (a.End == end);
             });
         }
-
         public Edge GetEdge(City end)
         {
             return (this.neighborList.Find(delegate(Edge a)
@@ -107,12 +102,10 @@ namespace TravelAgency
                 return (a.End == end);
             }));
         }
-
         public bool Equals(City other)
         {
             return (this.Name == other.Name);
         }
-
         public void AddTag(string tag)
         {
             if (tagList.Contains(tag))
@@ -120,33 +113,27 @@ namespace TravelAgency
                 tags.Add(tag);
             }
         }
-
         public void RemoveTag(string tag)
         {
             tags.Remove(tag);
         }
-
         public bool HasTag(string tag)
         {
             return tags.Contains(tag);
         }
-
         public void ClearTag()
         {
             tags.Clear();
         }
-
         #endregion
         public double GetCenterX()
         {
             return longitude;
         }
-
         public double GetCenterY()
         {
             return latitude;
         }
-
         #region 静态方法和成员
         public static double GetXmin()
         {
@@ -184,6 +171,7 @@ namespace TravelAgency
         }
         #endregion
     }
+
     public static class LatitudeClass
     {
         public static double FromString(string s)
@@ -219,8 +207,7 @@ namespace TravelAgency
             }
             return result + Math.Abs(value).ToString("F");
         }
-    }
-    
+    }   
     public class LongitudeClass
     {
         public static double FromString(string s)

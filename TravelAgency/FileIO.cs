@@ -196,7 +196,7 @@ namespace TravelAgency
             fStream.Close();
             return pathList;
         }
-        public static List<Request> loadRequestFromTxt(String path, ref Guide guide)
+        public static List<Request> loadRequestFromTxt(String path,Guide guide)
         {
             List<Request> requestList = new List<Request>();
             int lineCount = 0;
@@ -205,13 +205,12 @@ namespace TravelAgency
             String[] subSubStr = null;
             String[] subSubSubStr = null;
             StreamReader reader = new StreamReader(path, Encoding.Default);
-            Request newReq = null;
             while (reader.Peek() > 0)
             {
                 lineCount++;
                 String temp = reader.ReadLine();
                 subStr = temp.Split(new char[] { '|' });
-                newReq = new Request();
+                Request newReq = new Request();
                 newReq.name = subStr[0];
                 if (guide.Dict.ContainsKey(subStr[1]))
                 {

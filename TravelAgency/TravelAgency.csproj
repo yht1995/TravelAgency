@@ -51,6 +51,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -60,9 +61,11 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="UIAutomationProvider" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsFormsIntegration" />
     <Reference Include="WPFExtensions">
       <HintPath>.\WPFExtensions.dll</HintPath>
     </Reference>
@@ -78,10 +81,11 @@
       <DependentUpon>CityEdit.xaml</DependentUpon>
     </Compile>
     <Compile Include="ACO\Constants.cs" />
-    <Compile Include="ACO\CTsp.cs" />
+    <Compile Include="ACO\ACO.cs" />
     <Compile Include="Graph\Edge.cs" />
     <Compile Include="Graph\Graph.cs" />
     <Compile Include="ACO\Guide.cs" />
+    <Compile Include="ValueToProcessConverter.cs" />
     <Compile Include="Visualization.cs" />
     <Page Include="CityEdit.xaml">
       <SubType>Designer</SubType>
