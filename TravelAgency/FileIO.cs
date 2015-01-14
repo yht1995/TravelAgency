@@ -11,8 +11,16 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace TravelAgency
 {
+    /// <summary>
+    /// 文件读写类，静态类
+    /// </summary>
     public static class FileIO
     {
+        /// <summary>
+        /// 导入地图
+        /// </summary>
+        /// <param name="map">导入目标</param>
+        /// <returns></returns>
         public static bool ImportMap(AdjacencyGraph map)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -39,6 +47,10 @@ namespace TravelAgency
             }
             return false;
         }
+        /// <summary>
+        /// 导出地图
+        /// </summary>
+        /// <param name="map">数据来源</param>
         public static void ExportMap(AdjacencyGraph map)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -60,6 +72,11 @@ namespace TravelAgency
                 fStream.Close();
             }
         }
+        /// <summary>
+        /// 从二进制流导入地图
+        /// </summary>
+        /// <param name="path">二进制文件路径</param>
+        /// <param name="map">导入目标</param>
         public static void ImportFormBinMap(string path, AdjacencyGraph map)
         {
             Stream fStream = new FileStream(path, FileMode.Open, FileAccess.Read);
@@ -71,6 +88,11 @@ namespace TravelAgency
             City.tagDictionary = (Dictionary<string,int>)binFormat.Deserialize(fStream);
             fStream.Close();
         }
+        /// <summary>
+        /// 从电子表格导入地图
+        /// </summary>
+        /// <param name="path">文件路径</param>
+        /// <param name="map">导入目标</param>
         private static void ImportFormExcel(string path,AdjacencyGraph map)
         {
             if (path == null)
@@ -196,6 +218,11 @@ namespace TravelAgency
             fStream.Close();
             return pathList;
         }
+        /// <summary>
+        /// 导入需求文件
+        /// </summary>
+        /// <param name="guide">导入目标</param>
+        /// <returns></returns>
         public static List<Request> loadRequestFromTxt(Guide guide)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();

@@ -9,6 +9,9 @@ using Microsoft.Office.Core;
 
 namespace TravelAgency
 {
+    /// <summary>
+    /// 城市类
+    /// </summary>
     [Serializable]
     public class City : IEquatable<City>
     {
@@ -172,8 +175,16 @@ namespace TravelAgency
         #endregion
     }
 
+    /// <summary>
+    /// 纬度类
+    /// </summary>
     public static class LatitudeClass
     {
+        /// <summary>
+        /// 从字符串转换成经度，函数会抛出异常
+        /// </summary>
+        /// <param name="s">输入字符串</param>
+        /// <returns>经度值</returns>
         public static double FromString(string s)
         {
             if (!Regex.IsMatch(s, @"^[南北]纬(\s)*\d"))
@@ -193,7 +204,6 @@ namespace TravelAgency
             }
             return result;
         }
-
         public static string ToString(double value)
         {
             string result = "";
@@ -208,8 +218,16 @@ namespace TravelAgency
             return result + Math.Abs(value).ToString("F");
         }
     }   
-    public class LongitudeClass
+    /// <summary>
+    /// 经度类
+    /// </summary>
+    public static class LongitudeClass
     {
+        /// <summary>
+        /// 从字符串转换成纬度，函数会抛出异常
+        /// </summary>
+        /// <param name="s">输入字符串</param>
+        /// <returns>纬度值</returns>
         public static double FromString(string s)
         {
             if (!Regex.IsMatch(s, @"^[东西]经(\s)*\d"))
@@ -229,7 +247,6 @@ namespace TravelAgency
             }
             return result;
         }
-
         public static string ToString(double value)
         {
             string result = "";

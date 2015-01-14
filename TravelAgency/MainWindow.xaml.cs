@@ -21,7 +21,7 @@ namespace TravelAgency
         public MainWindow()
         {
             InitializeComponent();
-            visual = new Visualization(this.canva,ref map);
+            visual = new Visualization(this.canva,map);
             visual.OnVertexClickedEvent += visual_OnVertexClickedEvent;
             this.shortPath = new ObservableCollection<ShortPath>();
             this.shortList.ItemsSource = this.shortPath;
@@ -179,6 +179,10 @@ namespace TravelAgency
                 this.tagList.Add(tag);
             }
             visual.ClearHighLight();
+            foreach (City city in plan.Path)
+            {
+                visual.HighLightVertex(city);
+            }
             for (int i = 0; i < plan.Path.Count - 1; i++)
             {
                 visual.HighLightShortEdge(plan.Path[i], plan.Path[i + 1]);
@@ -229,7 +233,9 @@ namespace TravelAgency
             this.Fee -= End.TransitFees;
         }
     }
-
+    /// <summary>
+    /// 请求类，用户提供的搜索要求
+    /// </summary>
     public class Request
     {
         public string name;
@@ -265,7 +271,9 @@ namespace TravelAgency
             this.rateList.Add(tag.rate);
         }
     }
-
+    /// <summary>
+    /// 规划，系统给出的路径规划
+    /// </summary>
     public class Plan
     {
         public String Name { get; set; }
@@ -322,10 +330,18 @@ namespace TravelAgency
             }
         }
     }
-
+    /// <summary>
+    /// 兴趣标签类
+    /// </summary>
     public class Tag
     {
+        /// <summary>
+        /// 标签名称
+        /// </summary>
         public string tag { get; set; }
+        /// <summary>
+        /// 标签分级
+        /// </summary>
         public int rate { get; set; }
 
         public Tag(string tag, int rate)

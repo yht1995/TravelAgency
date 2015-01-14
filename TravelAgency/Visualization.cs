@@ -19,6 +19,9 @@ namespace TravelAgency
 {
     public delegate void OnVertexClickedEventHandler (City e);
 
+    /// <summary>
+    /// 可视化类，用于绘制地图
+    /// </summary>
     public class Visualization
     {
         private Canvas canva;
@@ -31,8 +34,12 @@ namespace TravelAgency
         private List<Line> highLightedEdge;
 
         public event OnVertexClickedEventHandler OnVertexClickedEvent;
-
-        public Visualization(Canvas canva,ref AdjacencyGraph map)
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="canva">画布</param>
+        /// <param name="map">地图</param>
+        public Visualization(Canvas canva,AdjacencyGraph map)
         {
             this.canva = canva;
             this.map = map;
@@ -40,6 +47,10 @@ namespace TravelAgency
             highLightedCity = new List<Ellipse>();
             highLightedEdge = new List<Line>();
         }
+        /// <summary>
+        /// 绘制地图
+        /// </summary>
+        /// <param name="graph">地图数据</param>
         public void DrawGraph(AdjacencyGraph graph)
         {
             map.UpdateMinMax();
@@ -60,7 +71,7 @@ namespace TravelAgency
             Yoffset = (City.GetYmax() + City.GetYmin()) / 2 - canva.Height / scale / 2;
             foreach (City vertex in graph.VertexList)
             {
-                foreach (Edge edge in graph.GeintsofVertex(vertex))
+                foreach (Edge edge in graph.EdgesofVertex(vertex))
                 {
                     edge.line = DrawEdge(edge);
                 }
@@ -72,10 +83,76 @@ namespace TravelAgency
             }
             map.Floyd();
         }
+        /// <summary>
+        /// 换算地理坐标
+        /// </summary>
+        /// <param name="canvaPos">画布坐标</param>
+        /// <returns>地理坐标</returns>
         public Point GetGeoLocaltion(Point canvaPos)
         {
             return new Point(canvaPos.X/scale+Xoffset,(canva.Height-canvaPos.Y)/scale+Yoffset);
         }
+        /// <summary>
+        /// 高亮节点
+        /// </summary>
+        /// <param name="city">要高亮的节点</param>
+        public void HighLightVertex(City city)
+        {
+            city.ellipse.Fill = Brushes.YellowGreen;
+            this.highLightedCity.Add(city.ellipse);
+        }
+        /// <summary>
+        /// 高亮最短路径
+        /// </summary>
+        /// <param name="start">起始节点</param>
+        /// <param name="end">终止节点</param>
+        public void HighLightShortEdge(City start, City end)
+        {
+            List<Edge> result = map.ShortestPath(start, end);
+            if (result == null)
+            {
+                return;
+            }
+            for (int i = 0; i < result.Count; i++)
+            {
+                if (i == 0)
+                {
+                    Canvas.SetZIndex(result[i].line, 1);
+                    result[i].line.StrokeThickness = 3;
+                    result[i].line.Stroke = System.Windows.Media.Brushes.DarkBlue;
+                }
+                else
+                {
+                    Canvas.SetZIndex(result[i].line, 1);
+                    result[i].line.StrokeThickness = 3;
+                    result[i].line.Stroke = System.Windows.Media.Brushes.OrangeRed;
+                }
+                highLightedEdge.Add(result[i].line);
+            }
+        }
+        /// <summary>
+        /// 撤销高亮
+        /// </summary>
+        public void ClearHighLight()
+        {
+            foreach (Ellipse e in highLightedCity)
+            {
+                e.Fill = Brushes.Yellow;
+            }
+            foreach (Line l in highLightedEdge)
+            {
+                Canvas.SetZIndex(l, 0);
+                l.StrokeThickness = 0.5;
+                l.Stroke = System.Windows.Media.Brushes.LightSteelBlue;
+            }
+            highLightedCity.Clear();
+            highLightedEdge.Clear();
+        }
+        /// <summary>
+        /// 绘制节点
+        /// </summary>
+        /// <param name="vertex">节点</param>
+        /// <returns>绘制的图像元素</returns>
         private Ellipse DrawVertex(City vertex)
         {
             Ellipse ellipse = new Ellipse();
@@ -107,6 +184,11 @@ namespace TravelAgency
             canva.Children.Add(text);
             return ellipse;
         }
+        /// <summary>
+        /// 绘制边
+        /// </summary>
+        /// <param name="edge">边</param>
+        /// <returns>绘制的图形元素</returns>
         private Line DrawEdge(Edge edge)
         {
             Line line = new Line();
@@ -121,14 +203,14 @@ namespace TravelAgency
             this.canva.Children.Add(line);
             return line;
         }
-        void ellipse_MouseDown(object sender, MouseEventArgs e)
+        private void ellipse_MouseDown(object sender, MouseEventArgs e)
         {
             City city;
             dictionary.TryGetValue(sender as Ellipse, out city);
             OnVertexClickedEvent(city);
             HighLightVertexAndShortEdge(city);
         }
-        void editCity_Click(object sender, RoutedEventArgs e)
+        private void editCity_Click(object sender, RoutedEventArgs e)
         {
             Ellipse ellipse = ContextMenuService.GetPlacementTarget(LogicalTreeHelper.GetParent(sender as MenuItem)) as Ellipse;
             City city;
@@ -148,7 +230,7 @@ namespace TravelAgency
                 }
             }
         }
-        void deleteCity_Click(object sender, RoutedEventArgs e)
+        private void deleteCity_Click(object sender, RoutedEventArgs e)
         {
             Ellipse ellipse = ContextMenuService.GetPlacementTarget(LogicalTreeHelper.GetParent(sender as MenuItem)) as Ellipse;
             City city;
@@ -163,6 +245,10 @@ namespace TravelAgency
                 MessageBox.Show("无法删除");
             }
         }
+        /// <summary>
+        /// 高亮节点和最近的路径
+        /// </summary>
+        /// <param name="city">要高亮的节点</param>
         private void HighLightVertexAndShortEdge(City city)
         {
             ClearHighLight();
@@ -172,45 +258,6 @@ namespace TravelAgency
             {
                 HighLightShortEdge(city, end);
             }
-        }
-        public void HighLightShortEdge(City Start, City end)
-        {
-            List<Edge> result = map.ShortestPath(Start, end);
-            if (result == null)
-            {
-                return;
-            }
-            for (int i = 0; i < result.Count; i++)
-            {
-                if (i == 0)
-                {
-                    Canvas.SetZIndex(result[i].line, 1);
-                    result[i].line.StrokeThickness = 3;
-                    result[i].line.Stroke = System.Windows.Media.Brushes.DarkBlue;
-                }
-                else
-                {
-                    Canvas.SetZIndex(result[i].line, 1);
-                    result[i].line.StrokeThickness = 3;
-                    result[i].line.Stroke = System.Windows.Media.Brushes.OrangeRed;
-                }
-                highLightedEdge.Add(result[i].line);
-            }
-        }
-        public void ClearHighLight()
-        {
-            foreach (Ellipse e in highLightedCity)
-            {
-                e.Fill = Brushes.Yellow;
-            }
-            foreach (Line l in highLightedEdge)
-            {
-                Canvas.SetZIndex(l, 0);
-                l.StrokeThickness = 0.5;
-                l.Stroke = System.Windows.Media.Brushes.LightSteelBlue;
-            }
-            highLightedCity.Clear();
-            highLightedEdge.Clear();
         }
     }
 }

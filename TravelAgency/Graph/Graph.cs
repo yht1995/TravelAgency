@@ -9,9 +9,15 @@ using System.Windows.Shapes;
 
 namespace TravelAgency
 {
+    /// <summary>
+    /// 图类
+    /// </summary>
     [Serializable]
     public class AdjacencyGraph
     {
+        /// <summary>
+        /// 节点列表
+        /// </summary>
         private List<City> vertexList;
         private Dictionary<string, int> dictionary;
         private int[,] adjacencyMartix;
@@ -91,7 +97,7 @@ namespace TravelAgency
                 return -1;
             }
         }
-        public List<Edge> GeintsofVertex(City vertex)
+        public List<Edge> EdgesofVertex(City vertex)
         {
             return vertex.NeighborList;
         }
@@ -119,6 +125,9 @@ namespace TravelAgency
                 return a.Name == name;
             });
         }
+        /// <summary>
+        /// 更新邻接矩阵
+        /// </summary>
         public void UpdataAdjacencyMartix()
         {
             UpdateDictionary();
@@ -144,6 +153,9 @@ namespace TravelAgency
             this.costMartix = (int[,])adjacencyMartix.Clone();
             Array.Copy(adjacencyMartix, costMartix, adjacencyMartix.Length);
         }
+        /// <summary>
+        /// 执行Floyd算法
+        /// </summary>
         public void Floyd()
         {
             UpdataAdjacencyMartix();
@@ -162,6 +174,12 @@ namespace TravelAgency
                 }
             }
         }
+        /// <summary>
+        /// 获得最短路径
+        /// </summary>
+        /// <param name="start">出发城市</param>
+        /// <param name="end">目标城市</param>
+        /// <returns>路径列表</returns>
         public List<Edge> ShortestPath(City start, City end)
         {
             if (start == end)
@@ -194,6 +212,9 @@ namespace TravelAgency
             }
             return result;
         }
+        /// <summary>
+        /// 更新极值
+        /// </summary>
         public void UpdateMinMax()
         {
             City.longitudeMin = Double.PositiveInfinity;
@@ -220,6 +241,9 @@ namespace TravelAgency
                 }
             }
         }
+        /// <summary>
+        /// 更新字典
+        /// </summary>
         public void UpdateDictionary()
         {
             dictionary.Clear();
