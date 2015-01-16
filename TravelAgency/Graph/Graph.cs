@@ -1,181 +1,182 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Windows.Shapes;
 
-namespace TravelAgency
+namespace TravelAgency.Graph
 {
     /// <summary>
-    /// 图类
+    ///     图类
     /// </summary>
     [Serializable]
     public class AdjacencyGraph
     {
+        private int[,] adjacencyMartix;
+        private int[,] costMartix;
+        private Dictionary<string, int> dictionary;
+        private int[,] pathMartix;
+
         /// <summary>
-        /// 节点列表
+        ///     节点列表
         /// </summary>
         private List<City> vertexList;
-        private Dictionary<string, int> dictionary;
-        private int[,] adjacencyMartix;
-        private int[,] pathMartix;
-        private int[,] costMartix;
+
+        public AdjacencyGraph()
+        {
+            vertexList = new List<City>();
+            dictionary = new Dictionary<string, int>();
+        }
 
         public Dictionary<string, int> Dictionary
         {
             get { return dictionary; }
             set { dictionary = value; }
         }
+
         public int[,] AdjacencyMartix
         {
             get { return adjacencyMartix; }
             set { adjacencyMartix = value; }
         }
+
         public List<City> VertexList
         {
             get { return vertexList; }
             set { vertexList = value; }
         }
 
-        public AdjacencyGraph()
-        {
-            this.vertexList = new List<City>();
-            this.dictionary = new Dictionary<string, int>();
-        }
         public void AddVertex(City vertex)
         {
-            if (!VertexList.Contains(vertex))
-            {
-                VertexList.Add(vertex);
-                dictionary.Add(vertex.Name, VertexList.Count - 1);
-            }
+            if (VertexList.Contains(vertex)) return;
+            VertexList.Add(vertex);
+            dictionary.Add(vertex.Name, VertexList.Count - 1);
         }
+
         public void RemoveVertex(City vertex)
         {
-            foreach(Edge edge in vertex.NeighborList)
+            foreach (var edge in vertex.NeighborList)
             {
                 edge.End.RemoveEdge(vertex);
             }
-            this.VertexList.Remove(vertex);
+            VertexList.Remove(vertex);
             Dictionary.Remove(vertex.Name);
         }
+
         public void AddEdge(City start, City end, int edge)
         {
-            if (start.GetEdge(end)==null)
+            if (start.GetEdge(end) == null)
             {
                 start.AddEdge(end, edge);
             }
-            if (end.GetEdge(start)==null)
+            if (end.GetEdge(start) == null)
             {
                 end.AddEdge(start, edge);
             }
         }
+
         public void AddEdge(int start, int end, int edge)
         {
-            City cstart, cend;
-            cstart = vertexList[start];
-            cend = vertexList[end];
+            var cstart = vertexList[start];
+            var cend = vertexList[end];
             AddEdge(cstart, cend, edge);
         }
+
         public void RemoveEdge(City start, City end)
         {
             start.RemoveEdge(end);
             end.RemoveEdge(start);
         }
-        public int GetEdge(City start,City end)
+
+        public int GetEdge(City start, City end)
         {
             try
             {
-                int edge = start.GetEdge(end).Value;
+                var edge = start.GetEdge(end).Value;
                 return edge;
             }
-            catch (System.Exception)
+            catch (Exception)
             {
                 return -1;
             }
         }
+
         public List<Edge> EdgesofVertex(City vertex)
         {
             return vertex.NeighborList;
         }
+
         public void Clear()
         {
-            this.VertexList.Clear();
-            this.Dictionary.Clear();
+            VertexList.Clear();
+            Dictionary.Clear();
         }
+
         public int GetCityIndex(City city)
         {
             int result;
-            if (this.dictionary.TryGetValue(city.Name, out result))
+            if (dictionary.TryGetValue(city.Name, out result))
             {
                 return result;
             }
-            else
-            {
-                return -1;
-            }
+            return -1;
         }
+
         public City FindCitybyName(string name)
         {
-            return VertexList.Find(delegate(City a)
-            {
-                return a.Name == name;
-            });
+            return VertexList.Find(a => a.Name == name);
         }
+
         /// <summary>
-        /// 更新邻接矩阵
+        ///     更新邻接矩阵
         /// </summary>
         public void UpdataAdjacencyMartix()
         {
             UpdateDictionary();
-            adjacencyMartix = new int[vertexList.Count,vertexList.Count];
+            adjacencyMartix = new int[vertexList.Count, vertexList.Count];
             pathMartix = new int[vertexList.Count, vertexList.Count];
-            for (int i = 0; i < VertexList.Count;i++ )
+            for (var i = 0; i < VertexList.Count; i++)
             {
-                for (int j = 0; j < VertexList.Count;j++ )
+                for (var j = 0; j < VertexList.Count; j++)
                 {
                     pathMartix[i, j] = i;
                     adjacencyMartix[i, j] = 1000000;
                 }
             }
-            foreach (City city in vertexList)
+            foreach (var city in vertexList)
             {
-                foreach (Edge edge in city.NeighborList)
+                foreach (var edge in city.NeighborList)
                 {
-                    int indexStart = vertexList.IndexOf(edge.Start);
-                    int indexEnd = vertexList.IndexOf(edge.End);
+                    var indexStart = vertexList.IndexOf(edge.Start);
+                    var indexEnd = vertexList.IndexOf(edge.End);
                     adjacencyMartix[indexStart, indexEnd] = edge.Value;
                 }
             }
-            this.costMartix = (int[,])adjacencyMartix.Clone();
+            costMartix = (int[,]) adjacencyMartix.Clone();
             Array.Copy(adjacencyMartix, costMartix, adjacencyMartix.Length);
         }
+
         /// <summary>
-        /// 执行Floyd算法
+        ///     执行Floyd算法
         /// </summary>
         public void Floyd()
         {
             UpdataAdjacencyMartix();
-            for (int k = 0; k < vertexList.Count; k++)
+            for (var k = 0; k < vertexList.Count; k++)
             {
-                for (int i = 0; i < vertexList.Count; i++)
+                for (var i = 0; i < vertexList.Count; i++)
                 {
-                    for (int j = 0; j < vertexList.Count; j++)
+                    for (var j = 0; j < vertexList.Count; j++)
                     {
-                        if (costMartix[i,k] + costMartix[k,j] < costMartix[i,j])
+                        if (costMartix[i, k] + costMartix[k, j] < costMartix[i, j])
                         {
                             costMartix[i, j] = costMartix[i, k] + costMartix[k, j];
-                            pathMartix[i,j] = pathMartix[k,j];
+                            pathMartix[i, j] = pathMartix[k, j];
                         }
                     }
                 }
             }
         }
+
         /// <summary>
-        /// 获得最短路径
+        ///     获得最短路径
         /// </summary>
         /// <param name="start">出发城市</param>
         /// <param name="end">目标城市</param>
@@ -186,14 +187,14 @@ namespace TravelAgency
             {
                 return null;
             }
-            if (VertexList.Count <2)
+            if (VertexList.Count < 2)
             {
                 return null;
             }
-            Stack<City> s = new Stack<City>();
-            int indexStart,indexEnd;
-            indexStart = dictionary[start.Name];
-            do 
+            var s = new Stack<City>();
+            int indexEnd;
+            var indexStart = dictionary[start.Name];
+            do
             {
                 indexEnd = dictionary[end.Name];
                 if (costMartix[indexStart, indexEnd] == 1000000)
@@ -201,19 +202,20 @@ namespace TravelAgency
                     return null;
                 }
                 s.Push(end);
-                end = vertexList[pathMartix[indexStart,indexEnd]];
-            } while (pathMartix[indexStart,indexEnd] != indexStart);
-            List<Edge> result = new List<Edge>();
+                end = vertexList[pathMartix[indexStart, indexEnd]];
+            } while (pathMartix[indexStart, indexEnd] != indexStart);
+            var result = new List<Edge>();
             while (s.Count != 0)
             {
-                Edge edge = start.GetEdge(s.Pop());
+                var edge = start.GetEdge(s.Pop());
                 result.Add(edge);
                 start = edge.End;
             }
             return result;
         }
+
         /// <summary>
-        /// 更新极值
+        ///     更新极值
         /// </summary>
         public void UpdateMinMax()
         {
@@ -221,7 +223,7 @@ namespace TravelAgency
             City.longitudeMax = Double.NegativeInfinity;
             City.latitudeMin = Double.PositiveInfinity;
             City.latitudeMax = Double.NegativeInfinity;
-            foreach (City c in VertexList)
+            foreach (var c in VertexList)
             {
                 if (c.Latitude > City.latitudeMax)
                 {
@@ -241,15 +243,16 @@ namespace TravelAgency
                 }
             }
         }
+
         /// <summary>
-        /// 更新字典
+        ///     更新字典
         /// </summary>
         public void UpdateDictionary()
         {
             dictionary.Clear();
-            for (int i =0;i<vertexList.Count;i++)
+            for (var i = 0; i < vertexList.Count; i++)
             {
-                City city = vertexList[i];
+                var city = vertexList[i];
                 dictionary.Add(city.Name, i);
             }
         }

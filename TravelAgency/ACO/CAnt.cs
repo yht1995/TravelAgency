@@ -1,50 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 
-namespace TravelAgency
+namespace TravelAgency.ACO
 {
     public class CAnt
     {
-        public int[] path;           //蚂蚁走的路径
-        public int movedCityCount;          //已经去过的城市的数量
-        public int realMovedCount;          //实际去过的城市的数量
-        public int dbCost;         //蚂蚁走过的路径花费(边+节点费)
-        public List<String> tagList;    //标签
-        public double estimateValue;    //预期估值 
-        
-        private int currentCityIndex;               //当前所在城市编号
-        private bool[] isRouted;
-        private double[,] trialMartix;
-        
-        private Guide guide;
-        private Request request;
-        private Constants constants;
+        private readonly Constants constants;
+        private readonly Guide guide;
+        private readonly bool[] isRouted;
+        private readonly Request request;
+        private readonly double[,] trialMartix;
+        private int currentCityIndex; //当前所在城市编号
+        public int dbCost; //蚂蚁走过的路径花费(边+节点费)
+        public double estimateValue; //预期估值 
+        public int movedCityCount; //已经去过的城市的数量
+        public readonly int[] path; //蚂蚁走的路径
+        public int realMovedCount; //实际去过的城市的数量
+        public List<String> tagList; //标签
 
-        private double random(double dbLow, double dbUpper)
-        {
-            double dbTemp = (double)constants.rand.Next(constants.RAND_MAX) / ((double)constants.RAND_MAX + 1.0);
-            return dbLow + dbTemp * (dbUpper - dbLow);
-        }
-
-        public CAnt(Guide guide, Request req,Constants constants,ref double[,] g_Trial)
+        public CAnt(Guide guide, Request req, Constants constants, ref double[,] gTrial)
         {
             this.constants = constants;
-            this.trialMartix = g_Trial;
+            trialMartix = gTrial;
             tagList = new List<String>();
             path = new int[guide.CityList.Count];
             isRouted = new bool[guide.CityList.Count];
             tagList = null;
             this.guide = guide;
-            this.request = req;
+            request = req;
+        }
+
+        private double Random(double dbLow, double dbUpper)
+        {
+            var dbTemp = constants.rand.Next(constants.randMax)/(constants.randMax + 1.0);
+            return dbLow + dbTemp*(dbUpper - dbLow);
         }
 
         public void Initial()
         {
-            for (int i = 0; i < guide.CityList.Count; i++)
+            for (var i = 0; i < guide.CityList.Count; i++)
             {
                 path[i] = -1;
                 isRouted[i] = false;
@@ -61,14 +56,14 @@ namespace TravelAgency
             realMovedCount = 0;
         }
 
-        public void calValue()
+        private void CalValue()
         {
-            int index = 0;
-            int a = 0;
-            int b = 0;
-            foreach (String expectTag in request.tagList)
+            var index = 0;
+            var a = 0;
+            var b = 0;
+            foreach (var expectTag in request.tagList)
             {
-                if(tagList.Contains(expectTag) == true)
+                if (tagList.Contains(expectTag))
                 {
                     a += request.rateList[index];
                 }
@@ -76,32 +71,31 @@ namespace TravelAgency
                 b += request.rateList[index];
                 index = index + 1;
             }
-            estimateValue = guide.Parameter[0] * a/b ;
+            estimateValue = guide.Parameter[0]*a/b;
 
-            estimateValue -= guide.Parameter[1] * Math.Abs(request.cityNum - realMovedCount) / request.cityNum;
+            estimateValue -= guide.Parameter[1]*Math.Abs(request.cityNum - realMovedCount)/request.cityNum;
 
             if (dbCost < request.total)
-                estimateValue += guide.Parameter[2] * (request.total - dbCost) / request.total;
+                estimateValue += guide.Parameter[2]*(request.total - dbCost)/request.total;
             else
-                estimateValue += guide.Parameter[2] * 3 * (request.total - dbCost) / request.total;
-
+                estimateValue += guide.Parameter[2]*3*(request.total - dbCost)/request.total;
         }
 
-        public int ChooseNextCity()
+        private int ChooseNextCity()
         {
-            int nSelectedCity = -1;
+            var nSelectedCity = -1;
 
             //计算去过和没去过的城市的信息素总和
-            double dbTotal = 0.0;
-            double[] prob = new double[guide.CityList.Count];
+            var dbTotal = 0.0;
+            var prob = new double[guide.CityList.Count];
 
-            for (int i = 0; i < guide.CityList.Count; i++)
+            for (var i = 0; i < guide.CityList.Count; i++)
             {
                 //if (m_nAllowedCity[i] == 1 && theGuide.CityList[i] != null)
-                if (guide.CityList[i] != null && i !=  currentCityIndex)
+                if (guide.CityList[i] != null && i != currentCityIndex)
                 {
-                    prob[i] = Math.Pow(trialMartix[currentCityIndex, i], constants.ALPHA) *
-                                Math.Pow(1.0 / guide.Expense[currentCityIndex, i], constants.BETA);
+                    prob[i] = Math.Pow(trialMartix[currentCityIndex, i], constants.alpha)*
+                              Math.Pow(1.0/guide.Expense[currentCityIndex, i], constants.beta);
                     dbTotal += prob[i];
                 }
                 else
@@ -111,82 +105,65 @@ namespace TravelAgency
             }
 
             //进行城市的随机选取
-            double dbTemp = 0.0;
             if (dbTotal > 0.0)
             {
-                dbTemp = this.random(0.0, dbTotal);
+                var dbTemp = Random(0.0, dbTotal);
 
-                for (int i = 0; i < guide.CityList.Count; i++)
+                for (var i = 0; i < guide.CityList.Count; i++)
                 {
-                    if (i != currentCityIndex && guide.CityList[i] != null)
-                    {
-                        dbTemp -= prob[i];
-                        if (dbTemp < 0.0)
-                        {
-                            nSelectedCity = i;
-                            break;
-                        }
-                    }
+                    if (i == currentCityIndex || guide.CityList[i] == null) continue;
+                    dbTemp -= prob[i];
+                    if (!(dbTemp < 0.0)) continue;
+                    nSelectedCity = i;
+                    break;
                 }
             }
 
-            if (nSelectedCity == -1)
+            if (nSelectedCity != -1) return nSelectedCity;
+            for (var i = 0; i < guide.CityList.Count; i++)
             {
-                for (int i = 0; i < guide.CityList.Count; i++)
-                {
-                    if (i!=currentCityIndex && guide.CityList[i] != null)
-                    {
-                        nSelectedCity = i;
-                        break;
-                    }
-                }
+                if (i == currentCityIndex || guide.CityList[i] == null) continue;
+                nSelectedCity = i;
+                break;
             }
 
             return nSelectedCity;
         }
 
-        public void Move()
+        private void Move()
         {
-            int nCityNo = ChooseNextCity();
+            var nCityNo = ChooseNextCity();
 
             path[movedCityCount] = nCityNo;
             currentCityIndex = nCityNo;
             movedCityCount++;
-            if (isRouted[nCityNo] == false)
-            {
-                isRouted[nCityNo] = true;
-                realMovedCount++;
-            }
+            if (isRouted[nCityNo]) return;
+            isRouted[nCityNo] = true;
+            realMovedCount++;
         }
 
-        public void CalPathLength()
+        private void CalPathLength()
         {
             dbCost = 0;
-            int m = 0;
-            int n = 0;
-            for (int i = 1; i < movedCityCount ; i++)
+            for (var i = 1; i < movedCityCount; i++)
             {
-                m = path[i];
-                n = path[i - 1];
+                var m = path[i];
+                var n = path[i - 1];
                 dbCost += guide.Expense[m, n];
                 dbCost += guide.CityList[m].TransitFees;
             }
-            dbCost -= guide.CityList[movedCityCount-1].TransitFees;
+            dbCost -= guide.CityList[movedCityCount - 1].TransitFees;
         }
 
-        public void AddTagList()
+        private void AddTagList()
         {
-            for (int i = 1; i < movedCityCount; i++)
+            for (var i = 1; i < movedCityCount; i++)
             {
-                if (i != request.start)
+                if (i == request.start) continue;
+                foreach (var newTag in guide.CityList[path[i]].Tags.Where
+                    (newTag => request.tagList.Contains(newTag) && !tagList.Contains(newTag)))
                 {
-                    foreach (String newTag in guide.CityList[path[i]].Tags)
-                    {
-                        if (request.tagList.Contains(newTag) && !tagList.Contains(newTag))
-                        {
-                            tagList.Add(newTag);
-                        }
-                    }
+                    tagList.Add(newTag);
                 }
             }
         }
@@ -194,26 +171,25 @@ namespace TravelAgency
         public void Search()
         {
             Initial();
-            while (movedCityCount == 1 || (movedCityCount < constants.searchStep && (path[movedCityCount - 1] != request.start)))
+            while (movedCityCount == 1 ||
+                   (movedCityCount < constants.searchStep && (path[movedCityCount - 1] != request.start)))
             {
                 Move();
             }
             if (movedCityCount == constants.searchStep)
             {
-                if (path[movedCityCount-1] == request.start)
-                {
-                    CalPathLength();
-                    AddTagList();
-                    realMovedCount = realMovedCount - 1;
-                    calValue();
-                }
+                if (path[movedCityCount - 1] != request.start) return;
+                CalPathLength();
+                AddTagList();
+                realMovedCount = realMovedCount - 1;
+                CalValue();
             }
             else
             {
                 CalPathLength();
                 AddTagList();
                 realMovedCount = realMovedCount - 1;
-                calValue();
+                CalValue();
             }
         }
     }

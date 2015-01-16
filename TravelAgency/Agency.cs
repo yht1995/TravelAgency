@@ -1,227 +1,204 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO; 
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.InteropServices;
-using System.Threading;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using TravelAgency.Graph;
 
 namespace TravelAgency
 {
     public class Path
     {
-        public List<int> NameIndex;
-        public List<int> Tag;
-        public int Transit;
         private int cityCount;
-        public double Lvaule;
-        private static int tagCount = City.tagList.Count;
+        public double lvaule;
+        public List<int> nameIndex;
+        public List<int> tag;
+        public int transit;
+
+        public Path()
+        {
+            nameIndex = new List<int>();
+            tag = new List<int>();
+            transit = 0;
+            cityCount = 0;
+        }
+
         public int CityCount
         {
             set { cityCount = value + 1; }
             get { return cityCount - 1; }
         }
 
-        public Path()
+        public void AddCity(City city, int cityIndex)
         {
-            NameIndex = new List<int>();
-            Tag = new List<int>();
-            Transit = 0;
-            cityCount = 0;
-        }
-        public void AddCity(City city,int cityIndex)
-        {
-            if (!NameIndex.Contains(cityIndex))
+            if (!nameIndex.Contains(cityIndex))
             {
                 cityCount++;
             }
-            NameIndex.Add(cityIndex);
-            foreach(String tag in city.Tags)
+            nameIndex.Add(cityIndex);
+            foreach (var s in city.Tags)
             {
                 int index;
-                City.tagDictionary.TryGetValue(tag, out index);
-                if (!Tag.Contains(index))
+                City.tagDictionary.TryGetValue(s, out index);
+                if (!tag.Contains(index))
                 {
-                    Tag.Add(index);
+                    tag.Add(index);
                 }
             }
         }
+
         public int CalcIValue(int[] rate)
         {
-            int a = 0;
-            foreach(int tag in Tag)
-            {
-                a += rate[tag];
-            }
-            return a;
+            return tag.Sum(t => rate[t]);
         }
     }
 
     public class Agency
     {
-        private const string filePath = "E:\\Data";
-        private double alaph = 3;
-        private double beta = 1;
-        private double eta = 5;
-        private const int bufSize = 500000;
+        private const string FilePath = "E:\\Data";
+        private const int BufSize = 500000;
+        private const double Alaph = 3;
+        private const double Beta = 1;
+        private const double Eta = 5;
 
-        private class searchNode
-        {
-            public searchNode parent;
-            public City self;
-            public int depth;
-            public int cost;
-        }
         public void PrepareData(AdjacencyGraph map)
         {
-            foreach (City city in map.VertexList)
+            foreach (var city in map.VertexList)
             {
-                for (int i = 1; i <= 5; i++)
+                for (var i = 1; i <= 5; i++)
                 {
                     EnumeratePath(map, city, i);
                 }
             }
         }
-        public void EnumeratePath(AdjacencyGraph map,City start,int count)
+
+        public void EnumeratePath(AdjacencyGraph map, City start, int count)
         {
-            List<Path> result = new List<Path>();
-            Stack<searchNode> s = new Stack<searchNode>();
-            searchNode node = new searchNode();
-            node.parent = null;
-            node.self = start;
-            node.depth = 0;
-            int bufCount = 0;
+            var result = new List<Path>();
+            var s = new Stack<SearchNode>();
+            var node = new SearchNode {parent = null, self = start, depth = 0};
+            var bufCount = 0;
             s.Push(node);
             while (s.Count != 0)
             {
-                searchNode top = s.Pop();
+                var top = s.Pop();
                 if (top.self == start && top.parent != null)
                 {
-                    searchNode n = top.parent;
-                    Path p = new Path();
+                    var n = top.parent;
+                    var p = new Path();
                     while (n.parent != null)
                     {
-                        p.AddCity(n.self,map.GetCityIndex(n.self));
-                        p.Transit += (n.cost + n.self.TransitFees);
+                        p.AddCity(n.self, map.GetCityIndex(n.self));
+                        p.transit += (n.cost + n.self.TransitFees);
                         n = n.parent;
                     }
-                    p.Transit -= 2 * start.TransitFees;
+                    p.transit -= 2*start.TransitFees;
                     result.Add(p);
                     bufCount++;
                 }
                 if (top.depth < count)
                 {
-                    foreach (Edge e in top.self.NeighborList)
+                    foreach (var next in top.self.NeighborList.Select(
+                        e => new SearchNode 
+                        {self = e.End, parent = top, depth = top.depth + 1, cost = e.Value}))
                     {
-                        searchNode next = new searchNode();
-                        next.self = e.End;
-                        next.parent = top;
-                        next.depth = top.depth + 1;
-                        next.cost = e.Value;
                         s.Push(next);
                     }
                 }
                 else if (top.depth == count)
                 {
-                    Edge back = start.GetEdge(top.self);
+                    var back = start.GetEdge(top.self);
                     if (back != null)
                     {
-                        searchNode next = new searchNode();
-                        next.self = start;
-                        next.parent = top;
-                        next.depth = top.depth + 1;
-                        next.cost = back.Value;
+                        var next = new SearchNode
+                        {self = start, parent = top, depth = top.depth + 1, cost = back.Value};
                         s.Push(next);
                     }
                 }
-                if (bufCount>=bufSize)
-                {
-                    FileIO.ExportPathData(filePath + "\\" + start.Name + "\\",result,count);
-                    result.Clear();
-                    bufCount = 0;
-                }
+                if (bufCount < BufSize) continue;
+                FileIo.ExportPathData(FilePath + "\\" + start.Name + "\\", result, count);
+                result.Clear();
+                bufCount = 0;
             }
-            FileIO.ExportPathData(filePath + "\\" + start.Name + "\\",result,count);
+            FileIo.ExportPathData(FilePath + "\\" + start.Name + "\\", result, count);
         }
+
         public Path BestPath(City city, int[] rate, int targetCityCount, int targetTransitFee)
         {
             FileInfo fileInfo;
-            int i = 0;
+            var i = 0;
             do
             {
                 i++;
-                fileInfo = new FileInfo(filePath + "\\" + city.Name + "\\" + i.ToString() + ".path");
+                fileInfo = new FileInfo(FilePath + "\\" + city.Name + "\\" + i + ".path");
             } while (fileInfo.Exists);
-            int tagSum = 0;
-            foreach (int tag in rate)
+            var tagSum = rate.Sum();
+            var betterList = new BlockingCollection<Path>();
+            for (var tim = 0; tim*8 < i; tim++)
             {
-                tagSum += tag;
-            }
-            BlockingCollection<Path> betterList = new BlockingCollection<Path>();
-            for (int tim = 0 ;tim * 8 < i;tim++)
-            {
-                int end = 8 + 8 * tim < i ? 8 + 8 * tim : i;
-                Parallel.For(1 + 8 * tim,end , (index) =>
+                var end = 8 + 8*tim < i ? 8 + 8*tim : i;
+                Parallel.For(1 + 8*tim, end, index =>
                 {
-                    string path = filePath + "\\" + city.Name + "\\" + index.ToString() + ".path";
-                    List<Path> pathList = FileIO.ImportPathData(path);
+                    var path = FilePath + "\\" + city.Name + "\\" + index.ToString() + ".path";
+                    var pathList = FileIo.ImportPathData(path);
                     Parallel.ForEach(pathList, p =>
                     {
-                        p.Lvaule = alaph * p.CalcIValue(rate) / tagSum
-                            + beta * CalcSValue(p, targetCityCount)
-                            + eta * CalcTValue(p, targetTransitFee);
+                        p.lvaule = Alaph*p.CalcIValue(rate)/tagSum
+                                   + Beta*CalcSValue(p, targetCityCount)
+                                   + Eta*CalcTValue(p, targetTransitFee);
                     });
                     betterList.Add(MaxLValuePath(pathList));
                 });
             }
             return MaxLValuePath(betterList);
         }
-        private Path MaxLValuePath(BlockingCollection<Path> pathList)
+
+        private static Path MaxLValuePath(IEnumerable<Path> pathList)
         {
             Path bestPath = null;
-            double max = double.NegativeInfinity;
-            foreach (Path p in pathList)
+            double[] max = {double.NegativeInfinity};
+            foreach (var p in pathList.Where(p => p.lvaule > max[0]))
             {
-                if (p.Lvaule > max)
-                {
-                    max = p.Lvaule;
-                    bestPath = p;
-                }
+                max[0] = p.lvaule;
+                bestPath = p;
             }
             return bestPath;
         }
-        private Path MaxLValuePath(List<Path> pathList)
+
+        private static Path MaxLValuePath(List<Path> pathList)
         {
             Path bestPath = null;
-            double max = double.NegativeInfinity;
-            foreach (Path p in pathList)
+            double[] max = {double.NegativeInfinity};
+            foreach (var p in pathList.Where(p => p.lvaule > max[0]))
             {
-                if (p.Lvaule > max)
-                {
-                    max = p.Lvaule;
-                    bestPath = p;
-                }
+                max[0] = p.lvaule;
+                bestPath = p;
             }
             return bestPath;
         }
-        private double CalcSValue(Path real,int target)
+
+        private static double CalcSValue(Path real, int target)
         {
-            return -((Math.Abs((double)real.CityCount - target)) / target);
+            return -((Math.Abs((double) real.CityCount - target))/target);
         }
-        private double CalcTValue(Path real, int target)
+
+        private static double CalcTValue(Path real, int target)
         {
-            double T = ((double)target - real.Transit) / target;
-            if (target >= real.Transit)
+            var T = ((double) target - real.transit)/target;
+            if (target >= real.transit)
             {
                 return T;
             }
-            else
-            {
-                return 3 * T;
-            }
+            return 3*T;
+        }
+
+        private class SearchNode
+        {
+            public int cost;
+            public int depth;
+            public SearchNode parent;
+            public City self;
         }
     }
 }

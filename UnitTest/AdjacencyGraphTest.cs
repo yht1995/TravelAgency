@@ -1,6 +1,7 @@
 ﻿using TravelAgency;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using TravelAgency.Graph;
 
 namespace UnitTest
 {

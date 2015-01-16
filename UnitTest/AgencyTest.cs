@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using TravelAgency.Graph;
 
 namespace UnitTest
 {
@@ -73,7 +74,7 @@ namespace UnitTest
         {
             string path = "D:\\document\\大二上\\数据结构\\第四次大作业\\map.map"; // TODO: 初始化为适当的值
             AdjacencyGraph map = new AdjacencyGraph();
-            FileIO.ImportFormBinMap(path, map);
+            FileIo.ImportFormBinMap(path, map);
             Agency target = new Agency(); // TODO: 初始化为适当的值
             City start = map.VertexList[0]; // TODO: 初始化为适当的值
             int count = 3; // TODO: 初始化为适当的值
@@ -89,7 +90,7 @@ namespace UnitTest
         {
             string path = "D:\\document\\大二上\\数据结构\\第四次大作业\\map.map"; // TODO: 初始化为适当的值
             AdjacencyGraph map = new AdjacencyGraph();
-            FileIO.ImportFormBinMap(path, map);
+            FileIo.ImportFormBinMap(path, map);
             Agency target = new Agency(); // TODO: 初始化为适当的值
             target.PrepareData(map);
             Assert.Inconclusive("无法验证不返回值的方法。");
@@ -103,7 +104,7 @@ namespace UnitTest
         {
             string path = "D:\\document\\大二上\\数据结构\\第四次大作业\\map.map"; // TODO: 初始化为适当的值
             AdjacencyGraph map = new AdjacencyGraph();
-            FileIO.ImportFormBinMap(path, map);
+            FileIo.ImportFormBinMap(path, map);
             Agency target = new Agency(); // TODO: 初始化为适当的值
             City city = map.VertexList[20]; // TODO: 初始化为适当的值
             int[] rate = new int[30] {0,0,1,0,0,0,0,0,0,0,
@@ -112,7 +113,7 @@ namespace UnitTest
             int cityCount = 3; // TODO: 初始化为适当的值
             int transitFee = 12000; // TODO: 初始化为适当的值
             Path actual = target.BestPath(city, rate, cityCount, transitFee);
-            Assert.Inconclusive("Lbest=" + actual.Lvaule);
+            Assert.Inconclusive("Lbest=" + actual.lvaule);
         }
     }
 }

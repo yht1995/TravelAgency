@@ -4,14 +4,14 @@
         Title="CityEdit" Height="512" Width="464">
     <Grid>
         <Label Content="城市名" HorizontalAlignment="Left" Margin="9,8,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.565,1.64"/>
-        <TextBox x:Name="cityName" HorizontalAlignment="Left" Height="23" Margin="60,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="115"/>
+        <TextBox x:Name="CityName" HorizontalAlignment="Left" Height="23" Margin="60,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="115"/>
         <Label Content="经度" HorizontalAlignment="Left" Margin="195,8,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="longitude" HorizontalAlignment="Left" Height="23" Margin="300,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="60"/>
+        <TextBox x:Name="Longitude" HorizontalAlignment="Left" Height="23" Margin="300,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="60"/>
         <Label Content="纬度" HorizontalAlignment="Left" Margin="195,41,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="latitude" HorizontalAlignment="Left" Height="23" Margin="300,43,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="60"/>
+        <TextBox x:Name="Latitude" HorizontalAlignment="Left" Height="23" Margin="300,43,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="60"/>
         <Label Content="中转费" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="transitFee" HorizontalAlignment="Left" Height="23" Margin="60,43,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="115"/>
-        <ComboBox x:Name="longtitudeSign" HorizontalAlignment="Left" Margin="234,10,0,0" VerticalAlignment="Top" Width="61" Height="23">
+        <TextBox x:Name="TransitFee" HorizontalAlignment="Left" Height="23" Margin="60,43,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="115"/>
+        <ComboBox x:Name="LongtitudeSign" HorizontalAlignment="Left" Margin="234,10,0,0" VerticalAlignment="Top" Width="61" Height="23">
             <ComboBoxItem>
                 <TextBlock Text="东经"></TextBlock>
             </ComboBoxItem>
@@ -19,7 +19,7 @@
                 <TextBlock Text="西经"></TextBlock>
             </ComboBoxItem>
         </ComboBox>
-        <ComboBox x:Name="latitudeSign" HorizontalAlignment="Left" Margin="234,43,0,0" VerticalAlignment="Top" Width="61" Height="23">
+        <ComboBox x:Name="LatitudeSign" HorizontalAlignment="Left" Margin="234,43,0,0" VerticalAlignment="Top" Width="61" Height="23">
             <ComboBoxItem>
                 <TextBlock Text="北纬"></TextBlock>
             </ComboBoxItem>
@@ -27,8 +27,8 @@
                 <TextBlock Text="南纬"></TextBlock>
             </ComboBoxItem>
         </ComboBox>
-        <ListBox x:Name="cityList"  HorizontalAlignment="Left" Height="340" Margin="9,95,0,0" VerticalAlignment="Top" Width="81"/>
-        <ListView x:Name="edgeListView" HorizontalAlignment="Left" Height="340" Margin="131,95,0,0" VerticalAlignment="Top" Width="169" ItemsSource="{Binding}">
+        <ListBox x:Name="CityList"  HorizontalAlignment="Left" Height="340" Margin="9,95,0,0" VerticalAlignment="Top" Width="81"/>
+        <ListView x:Name="EdgeListView" HorizontalAlignment="Left" Height="340" Margin="131,95,0,0" VerticalAlignment="Top" Width="169" ItemsSource="{Binding}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="城市名" Width="80" DisplayMemberBinding="{Binding Path=End.Name}"/>
@@ -48,6 +48,6 @@
         <Button x:Name="RemoveEdge" Content="&lt;" HorizontalAlignment="Left" Margin="95,271,0,0" VerticalAlignment="Top" Width="31" Click="RemoveEdge_Click"/>
         <Button x:Name="Ok" Content="确认" HorizontalAlignment="Left" Margin="225,450,0,0" VerticalAlignment="Top" Width="75" Height="21" Click="Ok_Click"/>
         <Button x:Name="Cancal" Content="取消" HorizontalAlignment="Left" Margin="315,450,0,0" VerticalAlignment="Top" Width="75" Height="21" Click="Cancal_Click"/>
-        <ListBox x:Name="tagList"  HorizontalAlignment="Left" Height="340" Margin="325,95,0,0" VerticalAlignment="Top" Width="120" SelectionMode="Multiple"/>
+        <ListBox x:Name="TagList"  HorizontalAlignment="Left" Height="340" Margin="325,95,0,0" VerticalAlignment="Top" Width="120" SelectionMode="Multiple"/>
     </Grid>
 </Window>

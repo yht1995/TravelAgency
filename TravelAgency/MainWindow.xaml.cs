@@ -1,202 +1,208 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Collections.ObjectModel;
-using System.Windows.Controls;
+using System.Globalization;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Threading;
+using TravelAgency.ACO;
+using TravelAgency.Graph;
 
 namespace TravelAgency
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
+        private readonly ObservableCollection<Plan> planList;
+        private readonly ObservableCollection<ShortPath> shortPath;
+        private readonly ObservableCollection<Tag> tagList;
+        private readonly Visualization visual;
         private AdjacencyGraph map = new AdjacencyGraph();
-        private Visualization visual;
-        private ObservableCollection<ShortPath> shortPath;
-        private ObservableCollection<Plan> planList;
-        private ObservableCollection<Tag> tagList;
-        private City selectedCity = null;
+        private City selectedCity;
 
         public MainWindow()
         {
             InitializeComponent();
-            visual = new Visualization(this.canva,map);
+            visual = new Visualization(Canva, map);
             visual.OnVertexClickedEvent += visual_OnVertexClickedEvent;
-            this.shortPath = new ObservableCollection<ShortPath>();
-            this.shortList.ItemsSource = this.shortPath;
-            this.planList = new ObservableCollection<Plan>();
-            this.planListView.ItemsSource = this.planList;
-            this.tagList = new ObservableCollection<Tag>();
-            this.tagListView.ItemsSource = this.tagList;
-            this.progressBar.Visibility = Visibility.Collapsed;
+            shortPath = new ObservableCollection<ShortPath>();
+            ShortList.ItemsSource = shortPath;
+            planList = new ObservableCollection<Plan>();
+            PlanListView.ItemsSource = planList;
+            tagList = new ObservableCollection<Tag>();
+            TagListView.ItemsSource = tagList;
+            ProgressBar.Visibility = Visibility.Collapsed;
         }
+
         private void Import_Click(object sender, RoutedEventArgs e)
         {
-            if (FileIO.ImportMap(map))
+            if (!FileIo.ImportMap(map)) return;
+            visual.DrawGraph(map);
+            tagList.Clear();
+            foreach (var tag in City.tagList)
             {
-                visual.DrawGraph(map);
-                tagList.Clear();
-                foreach (string tag in City.tagList)
-                {
-                    tagList.Add(new Tag(tag, 0));
-                }
+                tagList.Add(new Tag(tag, 0));
             }
         }
+
         private void Export_Click(object sender, RoutedEventArgs e)
         {
-            FileIO.ExportMap(map);
+            FileIo.ExportMap(map);
         }
+
         private void AddCity_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                Point geoLoc = visual.GetGeoLocaltion(Mouse.GetPosition(canva));
-                if (geoLoc.X == Double.PositiveInfinity)
+                var geoLoc = visual.GetGeoLocaltion(Mouse.GetPosition(Canva));
+                if (double.IsPositiveInfinity(geoLoc.X))
                 {
                     geoLoc.X = 25;
                     geoLoc.Y = 40;
                 }
-                City city = new City("城市名称", LongitudeClass.ToString(geoLoc.X), LatitudeClass.ToString(geoLoc.Y), "100");
-                CityEdit cityEdit = new CityEdit(city,ref map);
-                cityEdit.Title = "添加城市";
+                var city = new City("城市名称", LongitudeClass.ToString(geoLoc.X), LatitudeClass.ToString(geoLoc.Y), "100");
+                var cityEdit = new CityEdit(city, ref map) {Title = "添加城市"};
                 cityEdit.ShowDialog();
                 visual.DrawGraph(map);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
         }
+
         private void visual_OnVertexClickedEvent(City city)
         {
-            this.selectedCity = city;
-            this.cityName.Text = city.Name.ToString();
-            this.latitude.Text = LatitudeClass.ToString(city.Latitude);
-            this.longitude.Text = LongitudeClass.ToString(city.Longitude);
-            this.transitFee.Text = city.TransitFees.ToString();
-            this.cityTagList.Items.Clear();
-            foreach(string tag in city.Tags)
+            selectedCity = city;
+            CityName.Text = city.Name;
+            Latitude.Text = LatitudeClass.ToString(city.Latitude);
+            Longitude.Text = LongitudeClass.ToString(city.Longitude);
+            TransitFee.Text = city.TransitFees.ToString();
+            CityTagList.Items.Clear();
+            foreach (var tag in city.Tags)
             {
-                this.cityTagList.Items.Add(tag);
+                CityTagList.Items.Add(tag);
             }
-            this.shortPath.Clear();
-            foreach (City end in map.VertexList)
+            shortPath.Clear();
+            foreach (var end in map.VertexList)
             {
-                List<Edge> path =  map.ShortestPath(city, end);
+                var path = map.ShortestPath(city, end);
                 if (path != null)
                 {
                     shortPath.Add(new ShortPath(city, end, path));
                 }
             }
         }
+
         private void shortList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            this.visual.ClearHighLight();
-            ShortPath s = this.shortList.SelectedValue as ShortPath;
-            if (s != null)
-            {
-                City start = map.FindCitybyName(s.Start);
-                City end = map.FindCitybyName(s.End);
-                this.visual.HighLightShortEdge(start, end);
-            }
+            visual.ClearHighLight();
+            var s = ShortList.SelectedValue as ShortPath;
+            if (s == null) return;
+            var start = map.FindCitybyName(s.Start);
+            var end = map.FindCitybyName(s.End);
+            visual.HighLightShortEdge(start, end);
         }
+
         private void search_Click(object sender, RoutedEventArgs e)
         {
             map.UpdataAdjacencyMartix();
-            Guide guide = new Guide(map);
-            List<Tag> tagList = new List<Tag>();
-            foreach(Tag tag in this.tagList)
-            {
-                if (tag.rate!=0)
-                {
-                    tagList.Add(tag);
-                }
-            }
+            var guide = new Guide(map);
+            var taglist = tagList.Where(tag => tag.rate != 0).ToList();
             try
             {
                 #region throw
-                if (tagList.Count == 0)
+
+                if (taglist.Count == 0)
                 {
                     throw (new Exception("请选择城市标签"));
                 }
-                if (Convert.ToInt32(expTotal.Text) <=0)
+                if (Convert.ToInt32(ExpTotal.Text) <= 0)
                 {
                     throw (new Exception("出去玩是要花钱的"));
                 }
-                if (Convert.ToInt32(expCityNum.Text) <= 0 || Convert.ToInt32(expCityNum.Text) > 10)
+                if (Convert.ToInt32(ExpCityNum.Text) <= 0 || Convert.ToInt32(ExpCityNum.Text) > 10)
                 {
                     throw (new Exception("这么多城市玩的过来吗？"));
                 }
-                if (this.selectedCity == null)
+                if (selectedCity == null)
                 {
                     throw (new Exception("请在地图上选择出发城市"));
                 }
+
                 #endregion
-                Request request = new Request(name.Text, map.GetCityIndex(selectedCity), Convert.ToInt32(expCityNum.Text), Convert.ToInt32(expTotal.Text), tagList);
-                ACO tsp = new ACO(guide, request);
-                tsp.InitData();
-                tsp.Search();
-                planList.Add(new Plan(tsp, guide, request));
+
+                var request = new Request(name.Text, map.GetCityIndex(selectedCity), Convert.ToInt32(ExpCityNum.Text),
+                    Convert.ToInt32(ExpTotal.Text), taglist);
+                var aco = new ACO.ACO(guide, request);
+                aco.InitData();
+                aco.Search();
+                planList.Add(new Plan(aco, guide, request));
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);	
+                MessageBox.Show(ex.Message);
             }
         }
+
         private void searchFile_Click(object sender, RoutedEventArgs e)
         {
             map.UpdataAdjacencyMartix();
-            Guide guide = new Guide(map);
-            List<Request> ReqList = FileIO.loadRequestFromTxt(guide);
-            this.progressBar.Value = 0;
-            this.progressBar.Visibility = Visibility.Visible;
+            var guide = new Guide(map);
+            var reqList = FileIo.LoadRequestFromTxt(guide);
+            ProgressBar.Value = 0;
+            ProgressBar.Visibility = Visibility.Visible;
             double value = 0;
-            for (int i = 0; i < ReqList.Count; i++)
+            foreach (var request in reqList)
             {
-                ACO tsp = new ACO(guide, ReqList[i]);
+                var tsp = new ACO.ACO(guide, request);
                 tsp.InitData();
                 tsp.Search();
-                planList.Add(new Plan(tsp, guide, ReqList[i]));
-                progressBar.Dispatcher.
-                    Invoke(new Action<DependencyProperty,object>(progressBar.SetValue),
-                    DispatcherPriority.Background,
-                    ProgressBar.ValueProperty,
-                    value);
-                value += 100 / ReqList.Count;
+                planList.Add(new Plan(tsp, guide, request));
+                ProgressBar.Dispatcher.
+                    Invoke(new Action<DependencyProperty, object>(ProgressBar.SetValue),
+                        DispatcherPriority.Background,
+                        RangeBase.ValueProperty,
+                        value);
+                // ReSharper disable once PossibleLossOfFraction
+                value += 100/reqList.Count;
             }
-            this.progressBar.Visibility = Visibility.Collapsed;
+            ProgressBar.Visibility = Visibility.Collapsed;
         }
+
         private void planListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            Plan plan = this.planListView.SelectedValue as Plan;
-            this.name.Text = plan.Name;
-            this.expCityNum.Text = plan.ExpCityNum;
-            this.expTotal.Text = plan.ExpTotal;
-            this.tagList.Clear();
-            foreach(Tag tag in plan.ExpTagList)
+            var plan = PlanListView.SelectedValue as Plan;
+            if (plan == null) return;
+            name.Text = plan.Name;
+            ExpCityNum.Text = plan.ExpCityNum;
+            ExpTotal.Text = plan.ExpTotal;
+            tagList.Clear();
+            foreach (var tag in plan.ExpTagList)
             {
-                this.tagList.Add(tag);
+                tagList.Add(tag);
             }
             visual.ClearHighLight();
-            foreach (City city in plan.Path)
+            foreach (var city in plan.Path)
             {
                 visual.HighLightVertex(city);
             }
-            for (int i = 0; i < plan.Path.Count - 1; i++)
+            for (var i = 0; i < plan.Path.Count - 1; i++)
             {
                 visual.HighLightShortEdge(plan.Path[i], plan.Path[i + 1]);
             }
         }
+
         private void ClearList_Click(object sender, RoutedEventArgs e)
         {
-            this.selectedCity = null;
-            this.planList.Clear();
-            this.name.Text = String.Empty;
-            this.expCityNum.Text = String.Empty;
-            this.expTotal.Text = String.Empty;
-            this.tagList.Clear();
-            foreach (string tag in City.tagList)
+            selectedCity = null;
+            planList.Clear();
+            name.Text = String.Empty;
+            ExpCityNum.Text = String.Empty;
+            ExpTotal.Text = String.Empty;
+            tagList.Clear();
+            foreach (var tag in City.tagList)
             {
                 tagList.Add(new Tag(tag, 0));
             }
@@ -205,45 +211,47 @@ namespace TravelAgency
     }
 
     /// <summary>
-    /// 最短路径类，用于填充界面的ListView
+    ///     最短路径类，用于填充界面的ListView
     /// </summary>
     public class ShortPath
     {
+        /// <summary>
+        ///     构造函数
+        /// </summary>
+        /// <param name="start">起始城市</param>
+        /// <param name="end">目标城市</param>
+        /// <param name="path">路径列表</param>
+        public ShortPath(City start, City end, List<Edge> path)
+        {
+            Start = start.Name;
+            End = end.Name;
+            Path += start.Name;
+            Fee = 0;
+            foreach (var e in path)
+            {
+                Path += "->" + e.End.Name;
+                Fee += e.Value + e.End.TransitFees;
+            }
+            Fee -= end.TransitFees;
+        }
+
         public string Start { get; private set; }
         public string End { get; private set; }
         public string Path { get; private set; }
         public int Fee { get; private set; }
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        /// <param name="Start">起始城市</param>
-        /// <param name="End">目标城市</param>
-        /// <param name="path">路径列表</param>
-        public ShortPath(City Start, City End, List<Edge> path)
-        {
-            this.Start = Start.Name;
-            this.End = End.Name;
-            this.Path += Start.Name;
-            this.Fee = 0;
-            foreach (Edge e in path)
-            {
-                this.Path += "->" + e.End.Name;
-                Fee += e.Value + e.End.TransitFees;
-            }
-            this.Fee -= End.TransitFees;
-        }
     }
+
     /// <summary>
-    /// 请求类，用户提供的搜索要求
+    ///     请求类，用户提供的搜索要求
     /// </summary>
     public class Request
     {
-        public string name;
-        public int start;
         public int cityNum;
-        public int total;
-        public List<String> tagList;
+        public string name;
         public List<int> rateList;
+        public int start;
+        public List<String> tagList;
+        public int total;
 
         public Request()
         {
@@ -256,10 +264,10 @@ namespace TravelAgency
             tagList = new List<String>();
             rateList = new List<int>();
             this.name = name;
-            this.start = startCityIndex;
+            start = startCityIndex;
             this.cityNum = cityNum;
             this.total = total;
-            foreach (Tag tag in taglist)
+            foreach (var tag in taglist)
             {
                 AddTag(tag);
             }
@@ -267,87 +275,87 @@ namespace TravelAgency
 
         private void AddTag(Tag tag)
         {
-            this.tagList.Add(tag.tag);
-            this.rateList.Add(tag.rate);
+            tagList.Add(tag.tag);
+            rateList.Add(tag.rate);
         }
     }
+
     /// <summary>
-    /// 规划，系统给出的路径规划
+    ///     规划，系统给出的路径规划
     /// </summary>
     public class Plan
     {
+        public Plan(ACO.ACO tsp, Guide guide, Request theReq)
+        {
+            RealTagList = String.Empty;
+            ExpTagList = new List<Tag>();
+            Path = new List<City>();
+            int ii;
+            Name = theReq.name;
+            Begin = guide.CityList[theReq.start].Name;
+            ExpCityNum = theReq.cityNum.ToString();
+            ExpTotal = theReq.total.ToString();
+            for (ii = 0; ii < theReq.tagList.Count; ii++)
+            {
+                ExpTagList.Add(new Tag(theReq.tagList[ii], theReq.rateList[ii]));
+            }
+            RealCityNum = tsp.bestAnt.realMovedCount.ToString();
+            RealTotal = tsp.bestAnt.dbCost.ToString();
+            Value = tsp.bestAnt.estimateValue.ToString(CultureInfo.InvariantCulture);
+            for (ii = 0; ii < tsp.bestAnt.tagList.Count; ii++)
+            {
+                RealTagList += tsp.bestAnt.tagList[ii] + "、";
+            }
+            if (RealTagList.Length >= 2)
+            {
+                // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
+                RealTagList.Substring(0, RealTagList.Length - 2);
+            }
+            for (ii = 0; ii < tsp.bestAnt.movedCityCount; ii++)
+            {
+                Path.Add(guide.CityList[tsp.bestAnt.path[ii]]);
+            }
+        }
+
         public String Name { get; set; }
         public String Begin { get; set; }
         public String ExpCityNum { get; set; }
         public String RealCityNum { get; set; }
-        public String PathString 
+
+        public String PathString
         {
-            get
-            {
-                string result = "";
-                foreach (City city in Path)
-                {
-                    result += city.Name + " ";
-                }
-                return result;
-            }
+            get { return Path.Aggregate("", (current, city) => current + (city.Name + " ")); }
         }
+
         public List<City> Path { get; set; }
         public String ExpTotal { get; set; }
         public String RealTotal { get; set; }
         public String Value { get; set; }
         public List<Tag> ExpTagList { get; set; }
         public String RealTagList { get; set; }
-
-        public Plan(ACO tsp,Guide guide, Request theReq)
-        {
-            this.RealTagList = String.Empty;
-            this.ExpTagList = new List<Tag>();
-            this.Path = new List<City>();
-            int ii = 0;
-            this.Name = theReq.name;
-            this.Begin = guide.CityList[theReq.start].Name;
-            this.ExpCityNum = theReq.cityNum.ToString();
-            this.ExpTotal = theReq.total.ToString();
-            for (ii = 0; ii < theReq.tagList.Count; ii++)
-            {
-                this.ExpTagList.Add(new Tag(theReq.tagList[ii], theReq.rateList[ii]));
-            }
-            this.RealCityNum = tsp.bestAnt.realMovedCount.ToString();
-            this.RealTotal = tsp.bestAnt.dbCost.ToString();
-            this.Value = tsp.bestAnt.estimateValue.ToString();
-            for (ii = 0; ii < tsp.bestAnt.tagList.Count; ii++)
-            {
-                this.RealTagList += tsp.bestAnt.tagList[ii] + "、";
-            }
-            if (this.RealTagList.Length >= 2)
-            {
-                this.RealTagList.Substring(0, this.RealTagList.Length - 2);
-            }
-            for (ii = 0; ii < tsp.bestAnt.movedCityCount; ii++)
-            {
-                this.Path.Add(guide.CityList[tsp.bestAnt.path[ii]]);
-            }
-        }
     }
+
     /// <summary>
-    /// 兴趣标签类
+    ///     兴趣标签类
     /// </summary>
     public class Tag
     {
-        /// <summary>
-        /// 标签名称
-        /// </summary>
-        public string tag { get; set; }
-        /// <summary>
-        /// 标签分级
-        /// </summary>
-        public int rate { get; set; }
-
         public Tag(string tag, int rate)
         {
             this.tag = tag;
             this.rate = rate;
         }
+
+        /// <summary>
+        ///     标签名称
+        /// </summary>
+        // ReSharper disable once InconsistentNaming
+        public string tag { get; set; }
+
+        /// <summary>
+        ///     标签分级
+        /// </summary>
+        // ReSharper disable once InconsistentNaming
+        public int rate { get; set; }
     }
 }

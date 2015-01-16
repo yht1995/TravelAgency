@@ -1,32 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace TravelAgency
+namespace TravelAgency.ACO
 {
     public class Constants
     {
-        public int MaxCityNum = 50;
         public const int InitialValue = 99999;
-        public const double para_ALPHA = 3.0;
-        public const double para_BETA = 1.0;
-        public const double para_EITA = 5.0;
-    
-        //蚁群算法的参数
+        public const double ParaAlpha = 3.0;
+        public const double ParaBeta = 1.0;
+        public const double ParaEita = 5.0;
+        public double alpha = 1.0;
+        public double beta = 2.0;
+        public double dbMax = 10e9;
+        public double dbq = 100.0;
+        public int maxCityNum = 50;
+        public int nAntCount = 80;
+        public int nItCount = 30;
+        public Random rand = new Random(DateTime.Now.Millisecond);
+        public int randMax = 0x7fff;
+        public double rou = 0.5;
         public int searchStep = 18;
-        public double ALPHA = 1.0;
-        public double BETA = 2.0;
-        public double ROU = 0.5;
-
-        public int N_ANT_COUNT = 80;
-        public int N_IT_COUNT = 30;
-
-        public double DBQ = 100.0;
-        public double DB_MAX = 10e9;
-        public int RAND_MAX = 0x7fff;
-
-        public Random rand = new Random(System.DateTime.Now.Millisecond);
     }
 }

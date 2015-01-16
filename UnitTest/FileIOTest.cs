@@ -1,6 +1,7 @@
 ﻿using TravelAgency;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using TravelAgency.Graph;
 
 namespace UnitTest
 {
@@ -11,7 +12,7 @@ namespace UnitTest
     ///包含所有 FileIOTest 单元测试
     ///</summary>
     [TestClass()]
-    public class FileIOTest
+    public class FileIoTest
     {
 
 
@@ -72,7 +73,7 @@ namespace UnitTest
         {
             string path = "D:\\document\\大二上\\数据结构\\第四次大作业\\map.map"; // TODO: 初始化为适当的值
             AdjacencyGraph map = new AdjacencyGraph();
-            FileIO.ImportFormBinMap(path, map);
+            FileIo.ImportFormBinMap(path, map);
         }
     }
 }

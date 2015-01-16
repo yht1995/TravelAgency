@@ -1,114 +1,133 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Shapes;
 using System.Text.RegularExpressions;
-using Microsoft.Office.Core;
+using System.Windows.Shapes;
 
-namespace TravelAgency
+namespace TravelAgency.Graph
 {
     /// <summary>
-    /// 城市类
+    ///     城市类
     /// </summary>
     [Serializable]
     public class City : IEquatable<City>
     {
+        [NonSerialized] public Ellipse ellipse;
+
+        public double GetCenterX()
+        {
+            return longitude;
+        }
+
+        public double GetCenterY()
+        {
+            return latitude;
+        }
+
         #region 私有成员
+
         private string name;
-        private double longitude;   //经度
-        private double latitude;  //纬度
+        private double longitude; //经度
+        private double latitude; //纬度
         private int transitFees;
         private List<Edge> neighborList;
         private List<string> tags;
 
         #endregion
+
         #region 属性
+
         public double Longitude
         {
             get { return longitude; }
-            set { longitude = value;}
+            set { longitude = value; }
         }
+
         public double Latitude
         {
             get { return latitude; }
-            set {latitude = value; }
+            set { latitude = value; }
         }
+
         public string Name
         {
             get { return name; }
             set { name = value; }
         }
+
         public int TransitFees
         {
             get { return transitFees; }
-            set {
+            set
+            {
                 if (value < 0)
                 {
                     throw (new Exception("中转费非法"));
                 }
-                transitFees = value; }
+                transitFees = value;
+            }
         }
+
         public List<Edge> NeighborList
         {
             get { return neighborList; }
             set { neighborList = value; }
         }
+
         public List<string> Tags
         {
             get { return tags; }
             set { tags = value; }
         }
+
         #endregion
-        [NonSerialized]
-        public Ellipse ellipse;
+
         #region 公有方法
+
         public City()
         {
-            this.neighborList = new List<Edge>();
-            this.tags = new List<string>();
+            neighborList = new List<Edge>();
+            tags = new List<string>();
         }
+
         public City(string name, string longitude, string latitude, string transitFees)
         {
             this.name = name;
-            this.Latitude = LatitudeClass.FromString(latitude);
-            this.Longitude = LongitudeClass.FromString(longitude);
-            int result = new int();
-            if (!int.TryParse(transitFees,out result))
+            Latitude = LatitudeClass.FromString(latitude);
+            Longitude = LongitudeClass.FromString(longitude);
+            int result;
+            if (!int.TryParse(transitFees, out result))
             {
                 throw (new Exception("中转费非法"));
             }
             this.transitFees = result;
-            this.neighborList = new List<Edge>();
-            this.tags = new List<string>();
+            neighborList = new List<Edge>();
+            tags = new List<string>();
         }
+
         public void AddEdge(City end, int edge)
         {
-            Edge e = new Edge(this, end, edge);
+            var e = new Edge(this, end, edge);
             if (!neighborList.Contains(e))
             {
-                this.neighborList.Add(e);
+                neighborList.Add(e);
             }
         }
+
         public void RemoveEdge(City end)
         {
-            this.neighborList.RemoveAll(delegate(Edge a)
-            {
-                return (a.End == end);
-            });
+            neighborList.RemoveAll(a => (a.End == end));
         }
+
         public Edge GetEdge(City end)
         {
-            return (this.neighborList.Find(delegate(Edge a)
-            {
-                return (a.End == end);
-            }));
+            return (neighborList.Find(a => (a.End == end)));
         }
+
         public bool Equals(City other)
         {
-            return (this.Name == other.Name);
+            return (Name == other.Name);
         }
+
         public void AddTag(string tag)
         {
             if (tagList.Contains(tag))
@@ -116,28 +135,26 @@ namespace TravelAgency
                 tags.Add(tag);
             }
         }
+
         public void RemoveTag(string tag)
         {
             tags.Remove(tag);
         }
+
         public bool HasTag(string tag)
         {
             return tags.Contains(tag);
         }
+
         public void ClearTag()
         {
             tags.Clear();
         }
+
         #endregion
-        public double GetCenterX()
-        {
-            return longitude;
-        }
-        public double GetCenterY()
-        {
-            return latitude;
-        }
+
         #region 静态方法和成员
+
         public static double GetXmin()
         {
             return longitudeMin;
@@ -164,6 +181,7 @@ namespace TravelAgency
         public static double latitudeMax = Double.NegativeInfinity;
         public static List<string> tagList = new List<string>();
         public static Dictionary<string, int> tagDictionary = new Dictionary<string, int>();
+
         public static void AddTagType(string tag)
         {
             if (!tagList.Contains(tag))
@@ -172,16 +190,17 @@ namespace TravelAgency
                 tagDictionary.Add(tag, tagList.Count - 1);
             }
         }
+
         #endregion
     }
 
     /// <summary>
-    /// 纬度类
+    ///     纬度类
     /// </summary>
     public static class LatitudeClass
     {
         /// <summary>
-        /// 从字符串转换成经度，函数会抛出异常
+        ///     从字符串转换成经度，函数会抛出异常
         /// </summary>
         /// <param name="s">输入字符串</param>
         /// <returns>经度值</returns>
@@ -191,9 +210,9 @@ namespace TravelAgency
             {
                 throw (new Exception("纬度输入错误"));
             }
-            string temp = Regex.Replace(s, @"北纬(\s)*", "");
+            var temp = Regex.Replace(s, @"北纬(\s)*", "");
             temp = Regex.Replace(temp, @"南纬(\s)*", "-");
-            double result = new double();
+            double result;
             if (!double.TryParse(temp, out result))
             {
                 throw (new Exception("纬度输入错误"));
@@ -204,9 +223,10 @@ namespace TravelAgency
             }
             return result;
         }
+
         public static string ToString(double value)
         {
-            string result = "";
+            var result = "";
             if (value > 0)
             {
                 result = "北纬 ";
@@ -217,14 +237,15 @@ namespace TravelAgency
             }
             return result + Math.Abs(value).ToString("F");
         }
-    }   
+    }
+
     /// <summary>
-    /// 经度类
+    ///     经度类
     /// </summary>
     public static class LongitudeClass
     {
         /// <summary>
-        /// 从字符串转换成纬度，函数会抛出异常
+        ///     从字符串转换成纬度，函数会抛出异常
         /// </summary>
         /// <param name="s">输入字符串</param>
         /// <returns>纬度值</returns>
@@ -234,9 +255,9 @@ namespace TravelAgency
             {
                 throw (new Exception("经度输入错误"));
             }
-            string temp = Regex.Replace(s, @"东经(\s)*", "");
+            var temp = Regex.Replace(s, @"东经(\s)*", "");
             temp = Regex.Replace(temp, @"西经(\s)*", "-");
-            double result = new double();
+            double result;
             if (!double.TryParse(temp, out result))
             {
                 throw (new Exception("经度输入错误"));
@@ -247,9 +268,10 @@ namespace TravelAgency
             }
             return result;
         }
+
         public static string ToString(double value)
         {
-            string result = "";
+            var result = "";
             if (value > 0)
             {
                 result = "东经 ";
@@ -261,5 +283,4 @@ namespace TravelAgency
             return result + Math.Abs(value).ToString("F");
         }
     }
-
 }
