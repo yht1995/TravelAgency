@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 
 namespace TravelAgency
 {
-    class ValueToProcessConverter : IValueConverter
+    internal class ValueToProcessConverter : IValueConverter
     {
         private const double Thickness = 8;
         private const double Padding = 1;
@@ -18,44 +15,39 @@ namespace TravelAgency
         private static readonly SolidColorBrush NormalBrush;
         private static readonly SolidColorBrush WarnBrush;
         private static readonly Typeface SuccessRateTypeface;
-
-        private string percentString;
         private Point centerPoint;
+        private string percentString;
         private double radius;
 
         static ValueToProcessConverter()
         {
             NormalBrush = new SolidColorBrush(Colors.Green);
             WarnBrush = new SolidColorBrush(Colors.Red);
-            SuccessRateTypeface = new Typeface(new FontFamily("MSYH"), new FontStyle(), new FontWeight(), new FontStretch());
+            SuccessRateTypeface = new Typeface(new FontFamily("MSYH"), new FontStyle(), new FontWeight(),
+                new FontStretch());
         }
 
-        public ValueToProcessConverter()
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-
-        }
-
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            if (value is double && !string.IsNullOrEmpty((string)parameter)) {
-                double arg = (double)value;
-                double width = double.Parse((string)parameter);
-                radius = width / 2;
+            if (value is double && !string.IsNullOrEmpty((string) parameter))
+            {
+                var arg = (double) value;
+                var width = double.Parse((string) parameter);
+                radius = width/2;
                 centerPoint = new Point(radius, radius);
 
                 return DrawBrush(arg, 100, radius, radius, Thickness, Padding);
-            } else {
-                throw new ArgumentException();
             }
+            throw new ArgumentException();
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
 
         /// <summary>
-        /// 根据角度获取坐标
+        ///     根据角度获取坐标
         /// </summary>
         /// <param name="CenterPoint"></param>
         /// <param name="r"></param>
@@ -63,15 +55,15 @@ namespace TravelAgency
         /// <returns></returns>
         private Point GetPointByAngel(Point CenterPoint, double r, double angel)
         {
-            Point p = new Point();
-            p.X = Math.Sin(angel * Math.PI / 180) * r + CenterPoint.X;
-            p.Y = CenterPoint.Y - Math.Cos(angel * Math.PI / 180) * r;
+            var p = new Point();
+            p.X = Math.Sin(angel*Math.PI/180)*r + CenterPoint.X;
+            p.Y = CenterPoint.Y - Math.Cos(angel*Math.PI/180)*r;
 
             return p;
         }
 
         /// <summary>
-        /// 根据4个坐标画出扇形
+        ///     根据4个坐标画出扇形
         /// </summary>
         /// <param name="bigFirstPoint"></param>
         /// <param name="bigSecondPoint"></param>
@@ -81,81 +73,95 @@ namespace TravelAgency
         /// <param name="smallRadius"></param>
         /// <param name="isLargeArc"></param>
         /// <returns></returns>
-        private Geometry DrawingArcGeometry(Point bigFirstPoint, Point bigSecondPoint, Point smallFirstPoint, Point smallSecondPoint, double bigRadius, double smallRadius, bool isLargeArc)
+        private Geometry DrawingArcGeometry(Point bigFirstPoint, Point bigSecondPoint, Point smallFirstPoint,
+            Point smallSecondPoint, double bigRadius, double smallRadius, bool isLargeArc)
         {
-            PathFigure pathFigure = new PathFigure { IsClosed = true };
+            var pathFigure = new PathFigure {IsClosed = true};
             pathFigure.StartPoint = bigFirstPoint;
             pathFigure.Segments.Add(
-              new ArcSegment {
-                  Point = bigSecondPoint,
-                  IsLargeArc = isLargeArc,
-                  Size = new Size(bigRadius, bigRadius),
-                  SweepDirection = SweepDirection.Clockwise
-              });
-            pathFigure.Segments.Add(new LineSegment { Point = smallSecondPoint });
+                new ArcSegment
+                {
+                    Point = bigSecondPoint,
+                    IsLargeArc = isLargeArc,
+                    Size = new Size(bigRadius, bigRadius),
+                    SweepDirection = SweepDirection.Clockwise
+                });
+            pathFigure.Segments.Add(new LineSegment {Point = smallSecondPoint});
             pathFigure.Segments.Add(
-             new ArcSegment {
-                 Point = smallFirstPoint,
-                 IsLargeArc = isLargeArc,
-                 Size = new Size(smallRadius, smallRadius),
-                 SweepDirection = SweepDirection.Counterclockwise
-             });
-            PathGeometry pathGeometry = new PathGeometry();
+                new ArcSegment
+                {
+                    Point = smallFirstPoint,
+                    IsLargeArc = isLargeArc,
+                    Size = new Size(smallRadius, smallRadius),
+                    SweepDirection = SweepDirection.Counterclockwise
+                });
+            var pathGeometry = new PathGeometry();
             pathGeometry.Figures.Add(pathFigure);
 
             return pathGeometry;
         }
 
         /// <summary>
-        /// 根据当前值和最大值获取扇形
+        ///     根据当前值和最大值获取扇形
         /// </summary>
         /// <param name="value"></param>
         /// <param name="maxValue"></param>
         /// <returns></returns>
-        private Geometry GetGeometry(double value, double maxValue, double radiusX, double radiusY, double thickness, double padding)
+        private Geometry GetGeometry(double value, double maxValue, double radiusX, double radiusY, double thickness,
+            double padding)
         {
-            bool isLargeArc = false;
-            double percent = value / maxValue;
-            percentString = string.Format("{0}%", Math.Round(percent * 100));
-            double angel = percent * 360D;
+            var isLargeArc = false;
+            var percent = value/maxValue;
+            percentString = string.Format("{0}%", Math.Round(percent*100));
+            var angel = percent*360D;
             if (angel > 180) isLargeArc = true;
-            double bigR = radiusX;
-            double smallR = radiusX - thickness + padding;
-            Point firstpoint = GetPointByAngel(centerPoint, bigR, 0);
-            Point secondpoint = GetPointByAngel(centerPoint, bigR, angel);
-            Point thirdpoint = GetPointByAngel(centerPoint, smallR, 0);
-            Point fourpoint = GetPointByAngel(centerPoint, smallR, angel);
+            var bigR = radiusX;
+            var smallR = radiusX - thickness + padding;
+            var firstpoint = GetPointByAngel(centerPoint, bigR, 0);
+            var secondpoint = GetPointByAngel(centerPoint, bigR, angel);
+            var thirdpoint = GetPointByAngel(centerPoint, smallR, 0);
+            var fourpoint = GetPointByAngel(centerPoint, smallR, angel);
             return DrawingArcGeometry(firstpoint, secondpoint, thirdpoint, fourpoint, bigR, smallR, isLargeArc);
         }
 
-        private void DrawingGeometry(DrawingContext drawingContext, double value, double maxValue, double radiusX, double radiusY, double thickness, double padding)
+        private void DrawingGeometry(DrawingContext drawingContext, double value, double maxValue, double radiusX,
+            double radiusY, double thickness, double padding)
         {
-            if (value != maxValue) {
+            if (value != maxValue)
+            {
                 SolidColorBrush brush;
-                if (value < WarnValue) {
+                if (value < WarnValue)
+                {
                     brush = WarnBrush;
-                } else {
+                }
+                else
+                {
                     brush = NormalBrush;
                 }
-                drawingContext.DrawEllipse(null, new Pen(new SolidColorBrush(Color.FromRgb(0xdd, 0xdf, 0xe1)), thickness), centerPoint, radiusX, radiusY);
-                drawingContext.DrawGeometry(brush, new Pen(), GetGeometry(value, maxValue, radiusX, radiusY, thickness, padding));
-                FormattedText formatWords = new FormattedText(percentString,
+                drawingContext.DrawEllipse(null,
+                    new Pen(new SolidColorBrush(Color.FromRgb(0xdd, 0xdf, 0xe1)), thickness), centerPoint, radiusX,
+                    radiusY);
+                drawingContext.DrawGeometry(brush, new Pen(),
+                    GetGeometry(value, maxValue, radiusX, radiusY, thickness, padding));
+                var formatWords = new FormattedText(percentString,
                     CultureInfo.CurrentCulture,
                     FlowDirection.LeftToRight,
                     SuccessRateTypeface,
                     SuccessRateFontSize,
                     brush);
-                Point startPoint = new Point(centerPoint.X - formatWords.Width / 2, centerPoint.Y - formatWords.Height / 2);
+                var startPoint = new Point(centerPoint.X - formatWords.Width/2, centerPoint.Y - formatWords.Height/2);
                 drawingContext.DrawText(formatWords, startPoint);
-            } else {
+            }
+            else
+            {
                 drawingContext.DrawEllipse(null, new Pen(NormalBrush, thickness), centerPoint, radiusX, radiusY);
-                FormattedText formatWords = new FormattedText("100%",
+                var formatWords = new FormattedText("100%",
                     CultureInfo.CurrentCulture,
                     FlowDirection.LeftToRight,
                     SuccessRateTypeface,
                     SuccessRateFontSize,
                     NormalBrush);
-                Point startPoint = new Point(centerPoint.X - formatWords.Width / 2, centerPoint.Y - formatWords.Height / 2);
+                var startPoint = new Point(centerPoint.X - formatWords.Width/2, centerPoint.Y - formatWords.Height/2);
                 drawingContext.DrawText(formatWords, startPoint);
             }
 
@@ -163,15 +169,16 @@ namespace TravelAgency
         }
 
         /// <summary>
-        /// 根据当前值和最大值画出进度条
+        ///     根据当前值和最大值画出进度条
         /// </summary>
         /// <param name="value"></param>
         /// <param name="maxValue"></param>
         /// <returns></returns>
-        private Visual DrawShape(double value, double maxValue, double radiusX, double radiusY, double thickness, double padding)
+        private Visual DrawShape(double value, double maxValue, double radiusX, double radiusY, double thickness,
+            double padding)
         {
-            DrawingVisual drawingWordsVisual = new DrawingVisual();
-            DrawingContext drawingContext = drawingWordsVisual.RenderOpen();
+            var drawingWordsVisual = new DrawingVisual();
+            var drawingContext = drawingWordsVisual.RenderOpen();
 
             DrawingGeometry(drawingContext, value, maxValue, radiusX, radiusY, thickness, padding);
 
@@ -179,22 +186,22 @@ namespace TravelAgency
         }
 
         /// <summary>
-        /// 根据当前值和最大值画出进度条
+        ///     根据当前值和最大值画出进度条
         /// </summary>
         /// <param name="value"></param>
         /// <param name="maxValue"></param>
         /// <returns></returns>
-        private Brush DrawBrush(double value, double maxValue, double radiusX, double radiusY, double thickness, double padding)
+        private Brush DrawBrush(double value, double maxValue, double radiusX, double radiusY, double thickness,
+            double padding)
         {
-            DrawingGroup drawingGroup = new DrawingGroup();
-            DrawingContext drawingContext = drawingGroup.Open();
+            var drawingGroup = new DrawingGroup();
+            var drawingContext = drawingGroup.Open();
 
             DrawingGeometry(drawingContext, value, maxValue, radiusX, radiusY, thickness, padding);
 
-            DrawingBrush brush = new DrawingBrush(drawingGroup);
+            var brush = new DrawingBrush(drawingGroup);
 
             return brush;
         }
-
     }
 }

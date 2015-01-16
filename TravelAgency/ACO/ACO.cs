@@ -4,11 +4,10 @@
     public class ACO
     {
         private readonly CAnt[] antArray;
-        private readonly Constants constants = new Constants();
-        private readonly double[,] trialMartix;
         public readonly CAnt bestAnt;
+        private readonly Constants constants = new Constants();
         private readonly Guide guide;
-
+        private readonly double[,] trialMartix;
 
         public ACO(Guide guide, Request request)
         {

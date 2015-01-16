@@ -73,7 +73,7 @@ namespace UnitTest
         {
             string path = "D:\\document\\大二上\\数据结构\\第四次大作业\\map.map"; // TODO: 初始化为适当的值
             AdjacencyGraph map = new AdjacencyGraph();
-            FileIo.ImportFormBinMap(path, map);
+            FileIO.ImportFormBinMap(path, map);
         }
     }
 }

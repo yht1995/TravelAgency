@@ -24,7 +24,7 @@ namespace TravelAgency
         public MainWindow()
         {
             InitializeComponent();
-            visual = new Visualization(Canva, map);
+            visual = new Visualization(Canva, ref map);
             visual.OnVertexClickedEvent += visual_OnVertexClickedEvent;
             shortPath = new ObservableCollection<ShortPath>();
             ShortList.ItemsSource = shortPath;
@@ -37,7 +37,7 @@ namespace TravelAgency
 
         private void Import_Click(object sender, RoutedEventArgs e)
         {
-            if (!FileIo.ImportMap(map)) return;
+            if (!FileIO.ImportMap(map)) return;
             visual.DrawGraph(map);
             tagList.Clear();
             foreach (var tag in City.tagList)
@@ -48,7 +48,7 @@ namespace TravelAgency
 
         private void Export_Click(object sender, RoutedEventArgs e)
         {
-            FileIo.ExportMap(map);
+            FileIO.ExportMap(map);
         }
 
         private void AddCity_Click(object sender, RoutedEventArgs e)
@@ -107,7 +107,6 @@ namespace TravelAgency
 
         private void search_Click(object sender, RoutedEventArgs e)
         {
-            map.UpdataAdjacencyMartix();
             var guide = new Guide(map);
             var taglist = tagList.Where(tag => tag.rate != 0).ToList();
             try
@@ -148,9 +147,8 @@ namespace TravelAgency
 
         private void searchFile_Click(object sender, RoutedEventArgs e)
         {
-            map.UpdataAdjacencyMartix();
             var guide = new Guide(map);
-            var reqList = FileIo.LoadRequestFromTxt(guide);
+            var reqList = FileIO.LoadRequestFromTxt(guide);
             ProgressBar.Value = 0;
             ProgressBar.Visibility = Visibility.Visible;
             double value = 0;

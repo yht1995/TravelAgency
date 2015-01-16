@@ -31,7 +31,7 @@ namespace TravelAgency
         /// </summary>
         /// <param name="canva">画布</param>
         /// <param name="map">地图</param>
-        public Visualization(Canvas canva, AdjacencyGraph map)
+        public Visualization(Canvas canva, ref AdjacencyGraph map)
         {
             this.canva = canva;
             this.map = map;

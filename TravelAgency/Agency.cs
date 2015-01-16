@@ -100,7 +100,7 @@ namespace TravelAgency
                 if (top.depth < count)
                 {
                     foreach (var next in top.self.NeighborList.Select(
-                        e => new SearchNode 
+                        e => new SearchNode
                         {self = e.End, parent = top, depth = top.depth + 1, cost = e.Value}))
                     {
                         s.Push(next);
@@ -117,11 +117,11 @@ namespace TravelAgency
                     }
                 }
                 if (bufCount < BufSize) continue;
-                FileIo.ExportPathData(FilePath + "\\" + start.Name + "\\", result, count);
+                FileIO.ExportPathData(FilePath + "\\" + start.Name + "\\", result, count);
                 result.Clear();
                 bufCount = 0;
             }
-            FileIo.ExportPathData(FilePath + "\\" + start.Name + "\\", result, count);
+            FileIO.ExportPathData(FilePath + "\\" + start.Name + "\\", result, count);
         }
 
         public Path BestPath(City city, int[] rate, int targetCityCount, int targetTransitFee)
@@ -141,7 +141,7 @@ namespace TravelAgency
                 Parallel.For(1 + 8*tim, end, index =>
                 {
                     var path = FilePath + "\\" + city.Name + "\\" + index.ToString() + ".path";
-                    var pathList = FileIo.ImportPathData(path);
+                    var pathList = FileIO.ImportPathData(path);
                     Parallel.ForEach(pathList, p =>
                     {
                         p.lvaule = Alaph*p.CalcIValue(rate)/tagSum

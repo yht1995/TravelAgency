@@ -17,7 +17,7 @@ namespace TravelAgency
     /// <summary>
     ///     文件读写类，静态类
     /// </summary>
-    public static class FileIo
+    public static class FileIO
     {
         /// <summary>
         ///     导入地图

@@ -9,13 +9,13 @@ namespace TravelAgency.ACO
         private readonly Constants constants;
         private readonly Guide guide;
         private readonly bool[] isRouted;
+        public readonly int[] path; //蚂蚁走的路径
         private readonly Request request;
         private readonly double[,] trialMartix;
         private int currentCityIndex; //当前所在城市编号
         public int dbCost; //蚂蚁走过的路径花费(边+节点费)
         public double estimateValue; //预期估值 
         public int movedCityCount; //已经去过的城市的数量
-        public readonly int[] path; //蚂蚁走的路径
         public int realMovedCount; //实际去过的城市的数量
         public List<String> tagList; //标签
 
