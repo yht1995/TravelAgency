@@ -14,7 +14,7 @@ namespace TravelAgency.ACO
         private readonly double[,] trialMartix;
         private int currentCityIndex; //当前所在城市编号
         public int dbCost; //蚂蚁走过的路径花费(边+节点费)
-        public double estimateValue; //预期估值 
+        public double lValue; //预期估值 
         public int movedCityCount; //已经去过的城市的数量
         public int realMovedCount; //实际去过的城市的数量
         public List<String> tagList; //标签
@@ -71,14 +71,16 @@ namespace TravelAgency.ACO
                 b += request.rateList[index];
                 index = index + 1;
             }
-            estimateValue = guide.Parameter[0]*a/b;
-
-            estimateValue -= guide.Parameter[1]*Math.Abs(request.cityNum - realMovedCount)/request.cityNum;
-
+            lValue = constants.ParaAlpha*a/b;
+            lValue -= constants.ParaBeta*Math.Abs(request.cityNum - realMovedCount)/request.cityNum;
             if (dbCost < request.total)
-                estimateValue += guide.Parameter[2]*(request.total - dbCost)/request.total;
+            {
+                lValue += constants.ParaEta*(request.total - dbCost)/request.total;
+            }
             else
-                estimateValue += guide.Parameter[2]*3*(request.total - dbCost)/request.total;
+            {
+                lValue += 3*constants.ParaEta*(request.total - dbCost)/request.total;
+            }
         }
 
         private int ChooseNextCity()

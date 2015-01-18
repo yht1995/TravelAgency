@@ -3,30 +3,68 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:zoom="clr-namespace:WPFExtensions.Controls;assembly=WPFExtensions"
     xmlns:local="clr-namespace:TravelAgency"
-    x:Class="TravelAgency.MainWindow"
-    Title="旅游公司" Height="700" Width="1000" WindowStyle="ThreeDBorderWindow">
+    x:Class="TravelAgency.MainWindow" 
+    Icon = "TravelAgency.ico" Title="旅游公司" Height="700" Width="1000" WindowStyle="ThreeDBorderWindow">
 
     <Window.Resources>
         <local:ValueToProcessConverter x:Key="ValueToProcessConverter" />
     </Window.Resources>
 
     <Grid>
+
+        <Popup x:Name="EditAllEdgePopup" StaysOpen="True" Placement="Center">
+            <Border  Width="200" Height="130">
+                <Grid Background="LightSkyBlue">
+                    <DockPanel Height="28" VerticalAlignment="Top" Background="SteelBlue">
+                        <TextBox Height="26" Name="TxtBoxTitle" Width="120" Background="SteelBlue" BorderThickness="0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="White" FontSize="16" Focusable="False" IsHitTestVisible="False" IsTabStop="False" VerticalContentAlignment="Center">批量编辑边</TextBox>
+                    </DockPanel>
+
+                    <Grid Margin="0,30,0,0">
+                        <Label Margin="15,0,0,0" Height="28" VerticalAlignment="Top" HorizontalAlignment="Left" VerticalContentAlignment="Center" >输入批量调整值：</Label>
+                        <TextBox Height="28" x:Name="EditAllEdgeTextBox" Width="100" HorizontalAlignment="Center" VerticalContentAlignment="Center" Margin="16,28,84,44"/>
+                        <Button Margin="0,60,100,0" Height="22" Width="68" HorizontalAlignment="Right" Click="EditAllEdgePopupOkButton_OnClick">OK</Button>
+                        <Button Margin="0,60,15,0" Height="22" Width="68" HorizontalAlignment="Right" Click="EditAllEdgePopupCancelButton_OnClick">Cancel</Button>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Popup>
+
+        <Popup x:Name="EditParaPopup" StaysOpen="True" Placement="Center">
+            <Border  Width="400" Height="180">
+                <Grid Background="LightSkyBlue" Margin="0,0,0,0">
+                    <DockPanel Height="28" VerticalAlignment="Top" Background="SteelBlue">
+                        <TextBox Height="26" Width="120" Background="SteelBlue" BorderThickness="0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="White" FontSize="16" Focusable="False" IsHitTestVisible="False" IsTabStop="False" VerticalContentAlignment="Center">编辑推荐参数</TextBox>
+                    </DockPanel>
+                    <Grid Margin="0,30,0,0">
+                        <Label Content="参数α" Width="45" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Margin="10,10,0,0"/>
+                        <Label Content="参数β" Width="45" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Margin="10,43,0,0"/>
+                        <Label Content="参数η" Width="45" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Margin="10,76,0,0"/>
+                        <TextBox x:Name="ParaAlaphTextBox" Width="70" Height="28" Margin="60,43,270,79"/>
+                        <TextBox x:Name="ParaBetaTextBox" Width="70" Height="28" Margin="60,10,270,112"/>
+                        <TextBox x:Name="ParaEtaTextBox" Width="70" Height="28" Margin="60,76,270,46"/>
+                        <Button Margin="0,0,100,20" Height="22" Width="68" HorizontalAlignment="Right" VerticalAlignment="Bottom" Click="EditParaPopupOkButton_OnClick">OK</Button>
+                        <Button Margin="0,0,15,20" Height="22" Width="68" HorizontalAlignment="Right" VerticalAlignment="Bottom" Click="EditParaPopupCancelButton_OnClick">Cancel</Button>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Popup>
+
         <zoom:ZoomControl x:Name="Zoom" Margin="0,0,280,180">
             <Canvas HorizontalAlignment="Center" Height="1800" VerticalAlignment="Center" Width="3600" Name="Canva" />
             <zoom:ZoomControl.ContextMenu>
                 <ContextMenu>
                     <MenuItem x:Name="AddCity" Header="添加城市" Click="AddCity_Click" />
+                    <MenuItem x:Name="EditAllEdge" Header="批量调整" Click="EditAllEdge_OnClick"></MenuItem>
                 </ContextMenu>
             </zoom:ZoomControl.ContextMenu>
         </zoom:ZoomControl>
 
         <Grid Background="#FFE5E5E5" Height="180" VerticalAlignment="Bottom">
-            <GroupBox Header="地图数据" HorizontalAlignment="Left" Margin="10,10,0,10" Width="120">
+            <GroupBox Header="系统设置" HorizontalAlignment="Left" Margin="10,10,0,10" Width="120">
                 <Grid>
-                    <Button x:Name="Import" Content="导入数据" HorizontalAlignment="Center" Height="25"
-                            VerticalAlignment="Bottom" Width="70" Margin="15,0,15,85" Click="Import_Click" />
-                    <Button x:Name="Export" Content="导出数据" HorizontalAlignment="Center" Height="25"
-                            VerticalAlignment="Bottom" Width="70" Margin="15,0,15,55" Click="Export_Click" />
+                    <Button x:Name="Import" Content="导入数据" HorizontalAlignment="Center" Width="70" Margin="19,23,19,0" Click="Import_Click" Height="25" VerticalAlignment="Top" />
+                    <Button x:Name="Export" Content="导出数据" HorizontalAlignment="Center" Width="70" Margin="19,53,19,0" Click="Export_Click" Height="25" VerticalAlignment="Top" />
+                    <Button x:Name="ParaSet" Content="参数设置" HorizontalAlignment="Center" Width="70" Margin="19,83,19,0" Click="ParaSet_OnClick" Height="25" VerticalAlignment="Top" />
                 </Grid>
             </GroupBox>
 
@@ -109,16 +147,16 @@
                     <Label Content="城市名" HorizontalAlignment="Left" Margin="9,8,0,0" VerticalAlignment="Top"
                            RenderTransformOrigin="0.565,1.64" />
                     <TextBox x:Name="CityName" HorizontalAlignment="Left" Height="23" Margin="60,10,0,0"
-                             TextWrapping="Wrap" VerticalAlignment="Top" Width="86" />
+                            IsReadOnly="True" TextWrapping="Wrap" VerticalAlignment="Top" Width="86" />
                     <Label Content="经度" HorizontalAlignment="Left" Margin="10,38,0,0" VerticalAlignment="Top" />
                     <TextBox x:Name="Longitude" HorizontalAlignment="Left" Height="23" Margin="60,40,0,0"
-                             TextWrapping="Wrap" VerticalAlignment="Top" Width="86" />
+                            IsReadOnly="True" TextWrapping="Wrap" VerticalAlignment="Top" Width="86" />
                     <Label Content="纬度" HorizontalAlignment="Left" Margin="10,68,0,0" VerticalAlignment="Top" />
                     <TextBox x:Name="Latitude" HorizontalAlignment="Left" Height="23" Margin="60,70,0,0"
-                             TextWrapping="Wrap" VerticalAlignment="Top" Width="86" />
+                            IsReadOnly="True" TextWrapping="Wrap" VerticalAlignment="Top" Width="86" />
                     <Label Content="中转费" HorizontalAlignment="Left" Margin="10,98,0,0" VerticalAlignment="Top" />
                     <TextBox x:Name="TransitFee" HorizontalAlignment="Left" Height="23" Margin="60,100,0,0"
-                             TextWrapping="Wrap" VerticalAlignment="Top" Width="86" />
+                            IsReadOnly="True" TextWrapping="Wrap" VerticalAlignment="Top" Width="86" />
                     <ListBox x:Name="CityTagList" Margin="151,25,0,0" HorizontalAlignment="Left" Width="97"
                              Height="166" VerticalAlignment="Top" />
                     <Label Content="城市标签" HorizontalAlignment="Left" Margin="151,0,0,0" VerticalAlignment="Top" />

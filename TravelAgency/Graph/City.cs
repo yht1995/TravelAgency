@@ -11,7 +11,8 @@ namespace TravelAgency.Graph
     [Serializable]
     public class City : IEquatable<City>
     {
-        [NonSerialized] public Ellipse ellipse;
+        [NonSerialized] 
+        public Ellipse ellipse;
 
         public double GetCenterX()
         {

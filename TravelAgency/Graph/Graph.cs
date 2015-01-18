@@ -247,7 +247,7 @@ namespace TravelAgency.Graph
         /// <summary>
         ///     更新字典
         /// </summary>
-        public void UpdateDictionary()
+        private void UpdateDictionary()
         {
             dictionary.Clear();
             for (var i = 0; i < vertexList.Count; i++)

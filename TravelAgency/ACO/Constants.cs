@@ -4,20 +4,48 @@ namespace TravelAgency.ACO
 {
     public class Constants
     {
-        public const int InitialValue = 99999;
-        public const double ParaAlpha = 3.0;
-        public const double ParaBeta = 1.0;
-        public const double ParaEita = 5.0;
-        public double alpha = 1.0;
-        public double beta = 2.0;
-        public double dbMax = 10e9;
-        public double dbq = 100.0;
+        private double paraAlpha = 3.0;
+        private double paraBeta = 1.0;
+        private double paraEta = 5.0;
+        public readonly double alpha = 1.0;
+        public readonly double beta = 2.0;
+        public readonly double rou = 0.5;
+        public readonly double dbq = 100.0;
         public int maxCityNum = 50;
-        public int nAntCount = 80;
-        public int nItCount = 30;
-        public Random rand = new Random(DateTime.Now.Millisecond);
+        private int antCount = 80;
+        private int itCount = 30;
         public int randMax = 0x7fff;
-        public double rou = 0.5;
         public int searchStep = 18;
+        public Random rand = new Random(DateTime.Now.Millisecond);
+
+        public double ParaAlpha
+        {
+            get { return paraAlpha; }
+            set { paraAlpha = value; }
+        }
+
+        public double ParaBeta
+        {
+            get { return paraBeta; }
+            set { paraBeta = value; }
+        }
+
+        public double ParaEta
+        {
+            get { return paraEta; }
+            set { paraEta = value; }
+        }
+
+        public int AntCount
+        {
+            get { return antCount; }
+            set { antCount = value; }
+        }
+
+        public int ItCount
+        {
+            get { return itCount; }
+            set { itCount = value; }
+        }
     }
 }

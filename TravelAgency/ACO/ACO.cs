@@ -5,26 +5,27 @@
     {
         private readonly CAnt[] antArray;
         public readonly CAnt bestAnt;
-        private readonly Constants constants = new Constants();
+        private readonly Constants constants;
         private readonly Guide guide;
         private readonly double[,] trialMartix;
 
-        public ACO(Guide guide, Request request)
+        public ACO(Guide guide, Request request,Constants constants)
         {
             trialMartix = new double[constants.maxCityNum, constants.maxCityNum];
-            antArray = new CAnt[constants.nAntCount];
-            for (var j = 0; j < constants.nAntCount; j++)
+            antArray = new CAnt[constants.AntCount];
+            for (var j = 0; j < constants.AntCount; j++)
             {
                 antArray[j] = new CAnt(guide, request, constants, ref trialMartix);
             }
             this.guide = guide;
             bestAnt = new CAnt(guide, request, constants, ref trialMartix);
+            this.constants = constants;
         }
 
         public void InitData()
         {
             bestAnt.Initial();
-            bestAnt.estimateValue = 0.0;
+            bestAnt.lValue = 0.0;
             for (var i = 0; i < guide.CityList.Count; i++)
             {
                 for (var j = 0; j < guide.CityList.Count; j++)
@@ -46,13 +47,13 @@
                 }
             }
 
-            for (var i = 0; i < constants.nAntCount; i++)
+            for (var i = 0; i < constants.AntCount; i++)
             {
                 for (var j = 1; j < antArray[i].movedCityCount; j++)
                 {
                     var m = antArray[i].path[j];
                     var n = antArray[i].path[j - 1];
-                    dbTempAry[n, m] += constants.dbq*antArray[i].estimateValue/1000;
+                    dbTempAry[n, m] += constants.dbq*antArray[i].lValue/1000;
                     dbTempAry[m, n] = dbTempAry[n, m];
                 }
             }
@@ -68,13 +69,13 @@
 
         public void Search()
         {
-            for (var i = 0; i < constants.nItCount; i++)
+            for (var i = 0; i < constants.ItCount; i++)
             {
-                for (var j = 0; j < constants.nAntCount; j++)
+                for (var j = 0; j < constants.AntCount; j++)
                 {
                     antArray[j].Search();
-                    if (!(antArray[j].estimateValue > bestAnt.estimateValue)) continue;
-                    bestAnt.estimateValue = antArray[j].estimateValue;
+                    if (!(antArray[j].lValue > bestAnt.lValue)) continue;
+                    bestAnt.lValue = antArray[j].lValue;
 
                     for (var ii = 0; ii < antArray[j].movedCityCount; ii++)
                     {

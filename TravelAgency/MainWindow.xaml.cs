@@ -14,6 +14,7 @@ namespace TravelAgency
 {
     public partial class MainWindow
     {
+        private readonly Constants constants = new Constants();
         private readonly ObservableCollection<Plan> planList;
         private readonly ObservableCollection<ShortPath> shortPath;
         private readonly ObservableCollection<Tag> tagList;
@@ -33,6 +34,8 @@ namespace TravelAgency
             tagList = new ObservableCollection<Tag>();
             TagListView.ItemsSource = tagList;
             ProgressBar.Visibility = Visibility.Collapsed;
+            EditAllEdgePopup.IsOpen = false;
+            EditParaPopup.IsOpen = false;
         }
 
         private void Import_Click(object sender, RoutedEventArgs e)
@@ -134,7 +137,7 @@ namespace TravelAgency
 
                 var request = new Request(name.Text, map.GetCityIndex(selectedCity), Convert.ToInt32(ExpCityNum.Text),
                     Convert.ToInt32(ExpTotal.Text), taglist);
-                var aco = new ACO.ACO(guide, request);
+                var aco = new ACO.ACO(guide, request, constants);
                 aco.InitData();
                 aco.Search();
                 planList.Add(new Plan(aco, guide, request));
@@ -154,7 +157,7 @@ namespace TravelAgency
             double value = 0;
             foreach (var request in reqList)
             {
-                var tsp = new ACO.ACO(guide, request);
+                var tsp = new ACO.ACO(guide, request, constants);
                 tsp.InitData();
                 tsp.Search();
                 planList.Add(new Plan(tsp, guide, request));
@@ -205,6 +208,64 @@ namespace TravelAgency
                 tagList.Add(new Tag(tag, 0));
             }
             visual.ClearHighLight();
+        }
+
+        private void EditAllEdge_OnClick(object sender, RoutedEventArgs e)
+        {
+            EditAllEdgePopup.IsOpen = true;
+        }
+
+        private void EditAllEdgePopupOkButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var change = Convert.ToInt32(EditAllEdgeTextBox.Text);
+                foreach (var edge in map.VertexList.SelectMany(city => city.NeighborList))
+                {
+                    edge.Value += change;
+                }
+                EditAllEdgePopup.IsOpen = false;
+                visual.DrawGraph(map);
+            }
+            catch (Exception ex)
+            {
+                EditAllEdgePopup.IsOpen = false;
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void EditAllEdgePopupCancelButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            EditAllEdgePopup.IsOpen = false;
+        }
+
+        private void ParaSet_OnClick(object sender, RoutedEventArgs e)
+        {
+            ParaAlaphTextBox.Text = constants.ParaAlpha.ToString();
+            ParaBetaTextBox.Text = constants.ParaBeta.ToString();
+            ParaEtaTextBox.Text = constants.ParaEta.ToString();
+            EditParaPopup.IsOpen = true;
+        }
+
+        private void EditParaPopupOkButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                constants.ParaAlpha = Convert.ToDouble(ParaAlaphTextBox.Text);
+                constants.ParaBeta = Convert.ToDouble(ParaBetaTextBox.Text);
+                constants.ParaEta = Convert.ToDouble(ParaEtaTextBox.Text);
+                EditParaPopup.IsOpen = false;
+            }
+            catch (Exception ex)
+            {
+                EditParaPopup.IsOpen = false;
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void EditParaPopupCancelButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            EditParaPopup.IsOpen = false;
         }
     }
 
@@ -299,7 +360,7 @@ namespace TravelAgency
             }
             RealCityNum = tsp.bestAnt.realMovedCount.ToString();
             RealTotal = tsp.bestAnt.dbCost.ToString();
-            Value = tsp.bestAnt.estimateValue.ToString(CultureInfo.InvariantCulture);
+            Value = tsp.bestAnt.lValue.ToString(CultureInfo.InvariantCulture);
             for (ii = 0; ii < tsp.bestAnt.tagList.Count; ii++)
             {
                 RealTagList += tsp.bestAnt.tagList[ii] + "、";
