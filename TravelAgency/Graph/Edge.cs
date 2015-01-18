@@ -9,14 +9,8 @@ namespace TravelAgency.Graph
     [Serializable]
     public class Edge
     {
-        private City end;
-
-        /// <summary>
-        ///     绘制边的图形元素
-        /// </summary>
-        [NonSerialized] public Line line;
-
         private City start;
+        private City end;
         private int value;
 
         public Edge(City start, City end, int edge)
@@ -54,6 +48,11 @@ namespace TravelAgency.Graph
         }
 
         #region 绘图接口
+
+        /// <summary>
+        ///     绘制边的图形元素
+        /// </summary>
+        [NonSerialized] public Line line;
 
         public double GetStartX()
         {

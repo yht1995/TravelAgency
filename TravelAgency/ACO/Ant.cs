@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace TravelAgency.ACO
 {
-    public class CAnt
+    public class Ant
     {
         private readonly Constants constants;
         private readonly Guide guide;
@@ -19,7 +19,7 @@ namespace TravelAgency.ACO
         public int realMovedCount; //实际去过的城市的数量
         public List<String> tagList; //标签
 
-        public CAnt(Guide guide, Request req, Constants constants, ref double[,] gTrial)
+        public Ant(Guide guide, Request req, Constants constants, ref double[,] gTrial)
         {
             this.constants = constants;
             trialMartix = gTrial;

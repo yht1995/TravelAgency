@@ -131,12 +131,10 @@ namespace TravelAgency.Graph
         {
             UpdateDictionary();
             adjacencyMartix = new int[vertexList.Count, vertexList.Count];
-            pathMartix = new int[vertexList.Count, vertexList.Count];
             for (var i = 0; i < VertexList.Count; i++)
             {
                 for (var j = 0; j < VertexList.Count; j++)
                 {
-                    pathMartix[i, j] = i;
                     adjacencyMartix[i, j] = 1000000;
                 }
             }
@@ -149,8 +147,6 @@ namespace TravelAgency.Graph
                     adjacencyMartix[indexStart, indexEnd] = edge.Value;
                 }
             }
-            costMartix = (int[,]) adjacencyMartix.Clone();
-            Array.Copy(adjacencyMartix, costMartix, adjacencyMartix.Length);
         }
 
         /// <summary>
@@ -158,7 +154,28 @@ namespace TravelAgency.Graph
         /// </summary>
         public void Floyd()
         {
-            UpdataAdjacencyMartix();
+            UpdateDictionary();
+            costMartix = new int[vertexList.Count, vertexList.Count];
+            pathMartix = new int[vertexList.Count, vertexList.Count];
+            for (var i = 0; i < VertexList.Count; i++)
+            {
+                for (var j = 0; j < VertexList.Count; j++)
+                {
+                    pathMartix[i, j] = i;
+                    costMartix[i, j] = 1000000;
+                }
+            }
+            foreach (var city in vertexList)
+            {
+                foreach (var edge in city.NeighborList)
+                {
+                    var indexStart = vertexList.IndexOf(edge.Start);
+                    var indexEnd = vertexList.IndexOf(edge.End);
+                    costMartix[indexStart, indexEnd] = edge.Value +
+                                                       (vertexList[indexStart].TransitFees +
+                                                        vertexList[indexEnd].TransitFees)/2;
+                }
+            }
             for (var k = 0; k < vertexList.Count; k++)
             {
                 for (var i = 0; i < vertexList.Count; i++)

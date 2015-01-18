@@ -3,8 +3,8 @@
     // ReSharper disable once InconsistentNaming
     public class ACO
     {
-        private readonly CAnt[] antArray;
-        public readonly CAnt bestAnt;
+        private readonly Ant[] antArray;
+        public readonly Ant bestAnt;
         private readonly Constants constants;
         private readonly Guide guide;
         private readonly double[,] trialMartix;
@@ -12,13 +12,13 @@
         public ACO(Guide guide, Request request,Constants constants)
         {
             trialMartix = new double[constants.maxCityNum, constants.maxCityNum];
-            antArray = new CAnt[constants.AntCount];
+            antArray = new Ant[constants.AntCount];
             for (var j = 0; j < constants.AntCount; j++)
             {
-                antArray[j] = new CAnt(guide, request, constants, ref trialMartix);
+                antArray[j] = new Ant(guide, request, constants, ref trialMartix);
             }
             this.guide = guide;
-            bestAnt = new CAnt(guide, request, constants, ref trialMartix);
+            bestAnt = new Ant(guide, request, constants, ref trialMartix);
             this.constants = constants;
         }
 

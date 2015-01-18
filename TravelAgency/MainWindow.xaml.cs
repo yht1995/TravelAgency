@@ -110,6 +110,7 @@ namespace TravelAgency
 
         private void search_Click(object sender, RoutedEventArgs e)
         {
+            map.UpdataAdjacencyMartix();
             var guide = new Guide(map);
             var taglist = tagList.Where(tag => tag.rate != 0).ToList();
             try
@@ -150,6 +151,7 @@ namespace TravelAgency
 
         private void searchFile_Click(object sender, RoutedEventArgs e)
         {
+            map.UpdataAdjacencyMartix();
             var guide = new Guide(map);
             var reqList = FileIO.LoadRequestFromTxt(guide);
             ProgressBar.Value = 0;

@@ -79,7 +79,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Agency.cs" />
-    <Compile Include="ACO\CAnt.cs" />
+    <Compile Include="ACO\Ant.cs" />
     <Compile Include="CityEdit.xaml.cs">
       <DependentUpon>CityEdit.xaml</DependentUpon>
     </Compile>
