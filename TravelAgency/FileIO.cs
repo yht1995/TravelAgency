@@ -17,6 +17,7 @@ namespace TravelAgency
     /// <summary>
     ///     文件读写类，静态类
     /// </summary>
+    // ReSharper disable once InconsistentNaming
     public static class FileIO
     {
         /// <summary>
@@ -26,29 +27,29 @@ namespace TravelAgency
         /// <returns></returns>
         public static bool ImportMap(AdjacencyGraph map)
         {
-            var openFileDialog = new OpenFileDialog();
-            openFileDialog.Title = "选择文件";
-            openFileDialog.Filter = "地图数据文件|*.map|Excel文件|*.xlsx";
-            openFileDialog.FileName = string.Empty;
-            openFileDialog.FilterIndex = 1;
-            openFileDialog.RestoreDirectory = true;
-            openFileDialog.DefaultExt = "map";
-            if (openFileDialog.ShowDialog() == true)
+            var openFileDialog = new OpenFileDialog
             {
-                var filename = openFileDialog.FileName;
-                if (filename.Substring(filename.LastIndexOf(".", StringComparison.Ordinal) + 1) == "xlsx")
-                {
+                Title = "选择文件",
+                Filter = "地图数据文件|*.map|Excel文件|*.xlsx",
+                FileName = string.Empty,
+                FilterIndex = 1,
+                RestoreDirectory = true,
+                DefaultExt = "map"
+            };
+            if (openFileDialog.ShowDialog() != true) return false;
+            var filename = openFileDialog.FileName;
+            switch (filename.Substring(filename.LastIndexOf(".", StringComparison.Ordinal) + 1))
+            {
+                case "xlsx":
                     map.Clear();
                     ImportFormExcel(filename, map);
-                }
-                else if (filename.Substring(filename.LastIndexOf(".", StringComparison.Ordinal) + 1) == "map")
-                {
+                    break;
+                case "map":
                     map.Clear();
                     ImportFormBinMap(filename, map);
-                }
-                return true;
+                    break;
             }
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -57,24 +58,24 @@ namespace TravelAgency
         /// <param name="map">数据来源</param>
         public static void ExportMap(AdjacencyGraph map)
         {
-            var saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Title = "选择文件";
-            saveFileDialog.Filter = "地图数据文件|*.map";
-            saveFileDialog.FileName = string.Empty;
-            saveFileDialog.FilterIndex = 1;
-            saveFileDialog.RestoreDirectory = true;
-            saveFileDialog.DefaultExt = "map";
-            if (saveFileDialog.ShowDialog() == true)
+            var saveFileDialog = new SaveFileDialog
             {
-                var filename = saveFileDialog.FileName;
-                Stream fStream = new FileStream(filename, FileMode.Create, FileAccess.ReadWrite);
-                var binFormat = new BinaryFormatter();
-                binFormat.Serialize(fStream, map.VertexList);
-                binFormat.Serialize(fStream, map.Dictionary);
-                binFormat.Serialize(fStream, City.tagList);
-                binFormat.Serialize(fStream, City.tagDictionary);
-                fStream.Close();
-            }
+                Title = "选择文件",
+                Filter = "地图数据文件|*.map",
+                FileName = string.Empty,
+                FilterIndex = 1,
+                RestoreDirectory = true,
+                DefaultExt = "map"
+            };
+            if (saveFileDialog.ShowDialog() != true) return;
+            var filename = saveFileDialog.FileName;
+            Stream fStream = new FileStream(filename, FileMode.Create, FileAccess.ReadWrite);
+            var binFormat = new BinaryFormatter();
+            binFormat.Serialize(fStream, map.VertexList);
+            binFormat.Serialize(fStream, map.Dictionary);
+            binFormat.Serialize(fStream, City.tagList);
+            binFormat.Serialize(fStream, City.tagDictionary);
+            fStream.Close();
         }
 
         /// <summary>
