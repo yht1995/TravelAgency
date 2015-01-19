@@ -121,6 +121,7 @@ namespace TravelAgency
                 else
                 {
                     Panel.SetZIndex(result[i].line, 1);
+                    result[i].line.StrokeDashArray = new DoubleCollection() {2,2};
                     result[i].line.StrokeThickness = 3;
                     result[i].line.Stroke = Brushes.OrangeRed;
                 }
@@ -140,6 +141,7 @@ namespace TravelAgency
             foreach (var l in highLightedEdge)
             {
                 Panel.SetZIndex(l, 0);
+                l.StrokeDashArray = new DoubleCollection();
                 l.StrokeThickness = 0.5;
                 l.Stroke = Brushes.LightSteelBlue;
             }
